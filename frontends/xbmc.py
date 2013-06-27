@@ -29,10 +29,10 @@ class XBMC():
         try:
             # Shutdown inhibitor
             self.inhibitor = self.main.inhibit(
-                                                    "power:sleep",
-                                                    "frontend",
-                                                    "xbmc running",
-                                                    "block"
+                                                    what="shutdown:sleep",
+                                                    who="frontend",
+                                                    why="xbmc running",
+                                                    mode="block"
                                                     )
             self.proc = subprocess.Popen(self.cmd,env=self.environ)
             GObject.child_watch_add(self.proc.pid,self.on_exit,self.proc) # Add callback on exit
@@ -44,8 +44,10 @@ class XBMC():
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
         if condition == 0:
             logging.info(u"normal xbmc exit")
+            self.main.switchFrontend()
         elif condition < 16384:
             logging.warn(u"abnormal exit: %s",condition)
+            self.attach()
         elif condition == 16384:
             logging.info(u"XBMC want's a shutdown")
             self.main.dbus2vdr.Remote.Enable()

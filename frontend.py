@@ -124,7 +124,7 @@ class Main(dbus.service.Object):
             path = self.settings.get_setting('Frontend', 'bg_attached')
         #TODO: set background
 
-    def inhibit(self, what='sleep:power', who='First Base', why="left field",
+    def inhibit(self, what='sleep:shutdown', who='First Base', why="left field",
                                                                 mode="block"):
         try:
             a = self.bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1')
