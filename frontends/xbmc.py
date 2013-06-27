@@ -42,7 +42,6 @@ class XBMC():
 
     def on_exit(self,pid, condition,data):
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
-        self.main_instance.settings.external_prog = 0
         if condition == 0:
             logging.info(u"normal xbmc exit")
         elif condition < 16384:
