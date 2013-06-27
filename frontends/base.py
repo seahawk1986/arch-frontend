@@ -25,4 +25,6 @@ class vdrFrontend:
 
     def resume(self):
         if self.state == 2:
-            self.state = True
+            self.state = 1
+        elif self.state == 0:
+            self.state = 1
