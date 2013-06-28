@@ -26,6 +26,8 @@ class XBMC():
 
     def attach(self,frontend=True):
         logging.info('starting xbmc')
+        if self.status() == 1:
+            return
         try:
             # Shutdown inhibitor
             self.inhibitor = self.main.inhibit(
@@ -47,16 +49,18 @@ class XBMC():
             self.main.switchFrontend()
         elif condition < 16384:
             logging.warn(u"abnormal exit: %s",condition)
-            self.attach()
+            self.main.frontends[self.main.current].resume()
         elif condition == 16384:
             logging.info(u"XBMC want's a shutdown")
-            self.main.dbus2vdr.Remote.Enable()
+            self.main.switchFrontend()
+            #TODO: Remote handling
             self.main.dbus2vdr.Remote.HitKey(Power)
-            self.main.dbus2vdr.Remote.Disable()
         elif condition == 16896:
             logging.info(u"XBMC wants a reboot")
             #logging.info(self.main.powermanager.restart())
-        os.close(self.inhibitor)
+            # TODO: Reboot implementation via logind?
+            self.main.switchFrontend()
+        os.close(self.inhibitor.take())
 
     def detach(self,active=0):
         logging.info('stopping xbmc')
