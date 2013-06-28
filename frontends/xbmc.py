@@ -17,7 +17,8 @@ class XBMC():
         # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
         #self.cmd = self.main.settings.get_setting('XBMC', 'xbmc')
-        standalone = "--standalone"
+        #standalone = "--standalone"
+        standalone = ""
         self.cmd = ['/usr/lib/xbmc/xbmc.bin',standalone,
                                             '--lircdev','/var/run/lirc/lircd']
         self.proc = None
@@ -31,7 +32,7 @@ class XBMC():
         try:
             # Shutdown inhibitor
             self.inhibitor = self.main.inhibit(
-                                                    what="shutdown:sleep",
+                                                    what="shutdown:sleep:idle",
                                                     who="frontend",
                                                     why="xbmc running",
                                                     mode="block"
@@ -42,11 +43,12 @@ class XBMC():
         except:
             logging.exception('could not start xbmc')
 
-    def on_exit(self,pid, condition,data):
+    def on_exit(self,pid, condition, data):
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
         if condition == 0:
             logging.info(u"normal xbmc exit")
-            self.main.switchFrontend()
+            if self.main.current == 'xbmc':
+                self.main.switchFrontend()
         elif condition < 16384:
             logging.warn(u"abnormal exit: %s",condition)
             self.main.frontends[self.main.current].resume()
@@ -60,7 +62,10 @@ class XBMC():
             #logging.info(self.main.powermanager.restart())
             # TODO: Reboot implementation via logind?
             self.main.switchFrontend()
-        os.close(self.inhibitor.take())
+        try:
+            os.close(self.inhibitor.take())
+        except:
+            pass
 
     def detach(self,active=0):
         logging.info('stopping xbmc')

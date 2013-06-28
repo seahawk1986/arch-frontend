@@ -101,8 +101,10 @@ class Main(dbus.service.Object):
     def switchFrontend(self):
         if  self.frontends[self.current].status() == 2:
             self.frontends[self.current].resume()
-        self.frontends[self.current].detach()
+        old = self.current
         self.current = next(self.switch)
+        logging.debug("next frontend is {0}".format(self.current))
+        self.frontends[old].detach()
         self.frontends[self.current].attach()
         return self.getFrontend()
 
