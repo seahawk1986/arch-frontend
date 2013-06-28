@@ -135,7 +135,7 @@ class Main(dbus.service.Object):
             a = self.bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1')
             interface = 'org.freedesktop.login1.Manager'
             fd = a.Inhibit(what, who, why, mode, dbus_interface=interface)
-            return take(fd)
+            return fd
         except Exception as error:
             logging.exception(error)
             logging.warning("could not set inhibitor lock")
