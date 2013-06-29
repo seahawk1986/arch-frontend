@@ -30,10 +30,12 @@ import signal
 import struct
 import subprocess
 import sys
-from pydbus2vdr.dbus2vdr import *
-from frontends.base import *
-from frontends.Softhddevice import *
+from pydbus2vdr.dbus2vdr import DBus2VDR
+from frontends.base import vdrFrontend
+from frontends.Softhddevice import Softhddevice
 from frontends.xbmc import XBMC
+from frontends.xineliboutput import VDRsxfe
+from tools.lirc_socket import lircConnection
 
 
 class Main(dbus.service.Object):
@@ -64,6 +66,7 @@ class Main(dbus.service.Object):
             pass
         logging.debug("set main frontend to {0}".format(self.settings.frontend))
         self.startup()
+        self.lircConnection = lircConnection(self)
 
     def startup(self):
         logging.debug("running startup()")
@@ -93,19 +96,22 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', out_signature='i')
     def checkFrontend(self):
-        return self.frontends[self.current].status()
-
+        return self.status()
 
 
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def switchFrontend(self):
-        if  self.frontends[self.current].status() == 2:
-            self.frontends[self.current].resume()
+        if  self.status() == 2:
+            self.resume()
+        if self.current == 'vdr':
+            self.dbus2vdr.Remote.Disable()
         old = self.current
         self.current = next(self.switch)
         logging.debug("next frontend is {0}".format(self.current))
         self.frontends[old].detach()
-        self.frontends[self.current].attach()
+        self.attach()
+        if self.current == 'vdr':
+            self.dbus2vdr.Remote.Enable()
         return self.getFrontend()
 
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
@@ -122,14 +128,47 @@ class Main(dbus.service.Object):
     def detach(self):
         return self.frontends[self.current].detach()
 
+    @dbus.service.method('de.yavdr.frontend', out_signature='b')
+    def resume(self):
+        status = self.frontends[self.current].resume()
+        # TODO: change background
+        return status
+
+    @dbus.service.method('de.yavdr.frontend', out_signature='i')
+    def status(self):
+        return self.frontends[self.current].status()
+
+    def soft_detach(self):
+        logging.debug("running soft_detach")
+        self.detach()
+        logging.debug("add timer for send_shutdown")
+        self.timer = GObject.timeout_add(300000,self.send_shutdown)
+        return False
+
+    @dbus.service.method('de.yavdr.frontend',out_signature='b')
+    def send_shutdown(self,user=False):
+        if  self.dbus2vdr.Shutdown.ConfirmShutdown(user):
+            logging.debug("send 'HitKey POWER' to vdr")
+            self.dbus2vdr.Remote.Enable()
+            self.dbus2vdr.Remote.HitKey("POWER")
+            self.dbus2vdr.Remote.Disable()
+        return True
+
+
     @dbus.service.method('de.yavdr.frontend', in_signature='s',
                          out_signature='b')
-    def setBackground(self, background):
-        if background == 'detached':
-            path = self.settings.get_setting('Frontend', 'bg_detached')
-        elif background == 'attached':
-            path = self.settings.get_setting('Frontend', 'bg_attached')
-        #TODO: set background
+    def setBackground(self, background=False):
+        if self.status() == 0:
+            if not background:
+                path = self.settings.get_setting('Frontend', 'bg_detached', None)
+        elif self.status() == 1:
+            if not background:
+                path = self.settings.get_setting('Frontend', 'bg_attached', None)
+        if path is not None:
+            pass
+            #TODO: set background
+        else:
+            pass
 
     def inhibit(self, what='sleep:shutdown', who='First Base', why="left field",
                                                                 mode="block"):
@@ -143,13 +182,13 @@ class Main(dbus.service.Object):
             logging.warning("could not set inhibitor lock")
 
     def get_vdrFrontend(self):
-        #plugins = self.dbus2vdr.Plugins.List()
         if self.dbus2vdr.Plugins.check_plugin('softhddevice'):
             return Softhddevice(self, 'softhddevice')
-        elif 'xineliboutput' in plugins and self.xineliboutput:
+        elif self.dbus2vdr.Plugins.check_plugin('xineliboutput'):
             return VDRsxfe(self, 'vdr-sxfe')
-        elif 'xine' in plugins and self.xine:
-            self.frontend = Xine(self, 'xine')
+        #TODO: add xine frontend support
+        #elif self.dbus2vdr.Plugins.check_plugin('xine') and self.xine:
+        #    self.frontend = Xine(self, 'xine')
         else:
             logging.warning("no vdr frontend found")
             return None
@@ -179,6 +218,7 @@ class Main(dbus.service.Object):
             self.startup()
         elif kwargs['member'] == "Stop":
             logging.debug("vdr stopping")
+            self.current = None
         elif kwargs['member'] == "Start":
             logging.debug("vdr starting")
 
@@ -190,6 +230,7 @@ class Main(dbus.service.Object):
             logging.debug("vdr has no dbus name ownership")
         else:
             logging.debug("vdr has dbus name ownership")
+            self.current = None
         logging.debug(args)
 
     def set_toggle(self, target):

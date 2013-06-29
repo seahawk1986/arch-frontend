@@ -10,10 +10,11 @@ import socket
 import subprocess
 
 class VDRsxfe():
-    def __init__(self, main_instance, path='/usr/bin/vdr-sxfe',
+    def __init__(self, main, path='/usr/bin/vdr-sxfe',
                                             origin='127.0.0.1',port='37890'):
-        self.main_instance = main_instance
+        self.main = main
         self.origin = origin
+        self.name = "xineliboutput"
         self.port = port
         self.mode = self.main.settings.get_setting('Xineliboutput',
                                                    'xineliboutput',
@@ -22,17 +23,20 @@ class VDRsxfe():
         os.environ['__GL_SYNC_TO_VBLANK']="1"
         # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
-        self.cmd = [
+        self.cmd = self.main.settings.get_setting("xineliboutput",
+                                                  "xineliboutput_cmd",
+                                                  [
             '/usr/bin/vdr-sxfe --post tvtime:method=use_vo_driver \
             --reconnect --audio=alsa \
-            --syslog xvdr+tcp://%s:%s'%(origin,port)
+            --syslog xvdr+tcp://{0}:{1}'.format(origin,port)
             ]
+                                                  )
         self.proc = None
         self.environ = os.environ
-        logging.debug('vdr-sxfe command: %s',' '.join(self.cmd))
+        logging.debug('vdr-sxfe command: %s', self.cmd)
         self.state = 0
 
-    def attach(self):
+    def attach(self, options=None):
         if self.mode == 'remote' and self.status() == 0:
             while not self.isOpen():
                 time.sleep(1)
@@ -52,7 +56,7 @@ class VDRsxfe():
             except:
                 logging.info('vdr-sxfe already terminated')
             self.proc = None
-            self.main_instance.vdrCommands.vdrRemote.disable()
+            #self.main.dbus2vdr.Remote.Disable()
         elif self.mode == 'local':
              self.main.dbus2vdr.Plugins.SVDRPCommand('xinelibputput', 'LFRO',
                                                         'none')

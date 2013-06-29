@@ -17,15 +17,15 @@ class XBMC():
         # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
         #self.cmd = self.main.settings.get_setting('XBMC', 'xbmc')
-        #standalone = "--standalone"
-        standalone = ""
-        self.cmd = ['/usr/lib/xbmc/xbmc.bin',standalone,
-                                            '--lircdev','/var/run/lirc/lircd']
+        self.cmd = self.main.settings.get_setting('XBMC', 'xbmc', [
+            '/usr/lib/xbmc/xbmc.bin --standalone --lircdev /var/run/lirc/lircd'
+            ]
+        )
         self.proc = None
         self.environ = os.environ
-        logging.debug('xbmc command: %s',' '.join(self.cmd))
+        logging.debug('xbmc command: %s', self.cmd)
 
-    def attach(self,frontend=True):
+    def attach(self, options=None):
         logging.info('starting xbmc')
         if self.status() == 1:
             return
@@ -37,7 +37,7 @@ class XBMC():
                                                     why="xbmc running",
                                                     mode="block"
                                                     )
-            self.proc = subprocess.Popen(self.cmd,env=self.environ)
+            self.proc = subprocess.Popen(self.cmd, shell=True, env=self.environ)
             GObject.child_watch_add(self.proc.pid,self.on_exit,self.proc) # Add callback on exit
             logging.debug('started xbmc')
         except:
