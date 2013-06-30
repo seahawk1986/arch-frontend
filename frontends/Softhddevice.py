@@ -3,7 +3,6 @@ import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 import logging
-from pydbus2vdr.dbus2vdr import *
 from frontends.base import *
 
 

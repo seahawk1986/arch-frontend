@@ -30,7 +30,7 @@ import signal
 import struct
 import subprocess
 import sys
-from pydbus2vdr.dbus2vdr import DBus2VDR
+from dbus2vdr import DBus2VDR
 from frontends.base import vdrFrontend
 from frontends.Softhddevice import Softhddevice
 from frontends.xbmc import XBMC
