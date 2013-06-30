@@ -4,7 +4,6 @@ from dbus.mainloop.glib import DBusGMainLoop
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 from gi.repository import GObject
 import logging
-from pydbus2vdr.dbus2vdr import *
 import os
 import subprocess
 
