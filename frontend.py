@@ -53,6 +53,8 @@ class Main(dbus.service.Object):
         self.vdrDBusSignal()
         self.current = None
         self.wants_shutdown = False
+        signal.signal(signal.SIGTERM, self.sigint)
+        signal.signal(signal.SIGINT, self.sigint)
         self.lircConnection = lircConnection(self)
         if self.dbus2vdr.checkVDRstatus():
             self.prepare()
@@ -255,6 +257,12 @@ class Main(dbus.service.Object):
         while not next(self.switch) == self.target:
              pass
 
+    def sigint(self, signal, *args, **kwargs):
+        logging.info("got %s" % signal)
+        self.frontends[self.current].detach()
+        self.loop.quit()
+        sys.exit()
+
 
 class Settings:
     def __init__(self, config):
@@ -315,18 +323,14 @@ class Options():
         (options, args) = self.parser.parse_args()
         return options
 
-def sigint(self, signal, frame, **args):
-    logging.info("got %s" % signal)
-    self.frontends[self.current].detach()
-    sys.exit()
-    loop.quit()
-
+    
 
 if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
     options = Options()
+    global main
     main = Main(options.get_options())
-    signal.signal(signal.SIGTERM, sigint)
-    signal.signal(signal.SIGINT, sigint)
+    #signal.signal(signal.SIGTERM, sigint)
+    #signal.signal(signal.SIGINT, sigint)
     loop = GObject.MainLoop()
     loop.run()
