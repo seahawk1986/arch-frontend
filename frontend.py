@@ -47,16 +47,22 @@ class Main(dbus.service.Object):
         self.settings = Settings(self.options.config)
         logging.debug(u"read settings from {0}".format(self.options.config))
         logging.debug(u"starting frontend script")
-        self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0)
         # track vdr status changes
+        self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0)
         self.vdrStatusSignal()
         self.vdrDBusSignal()
-        self.wakeup = self.checkWakeup()
+        self.current = None
+        self.wants_shutdown = False
+        self.lircConnection = lircConnection(self)
+        if self.dbus2vdr.checkVDRstatus():
+            self.prepare()
+
+    def prepare(self):
         # init Frontends
+        self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0)
         self.frontends = {}
         self.frontends['vdr'] = self.get_vdrFrontend()
         self.frontends['xbmc'] = self.get_xbmcFrontend()
-        self.current = None
         for frontend, obj in self.frontends.items():
             if not obj:
                 logging.warning("using dummy frontend")
@@ -66,9 +72,9 @@ class Main(dbus.service.Object):
             pass
         logging.debug("set main frontend to {0}".format(self.settings.frontend))
         self.startup()
-        self.lircConnection = lircConnection(self)
 
     def startup(self):
+        self.wakeup = self.checkWakeup()
         logging.debug("running startup()")
         if self.settings.attach == 'never' or (
                         self.settings.attach == 'auto' and not self.wakeup):
@@ -78,13 +84,14 @@ class Main(dbus.service.Object):
                         self.settings.frontend == 'xbmc' and not self.current):
             self.frontends['xbmc'].attach()
             self.current = 'xbmc'
+            logging.debug('startup: frontend is xbmc')
         elif self.current == 'vdr' or (
                         self.settings.frontend == 'vdr' and not self.current):
             # check if vdr is ready
             if self.dbus2vdr.checkVDRstatus():
                 self.frontends['vdr'].resume()
                 self.current = 'vdr'
-                logging.debug("activated vdr frontend")
+                logging.debug("startup: using vdr frontend %s", self.current)
             else:
                 logging.debug("vdr not ready")
                 return
@@ -92,7 +99,11 @@ class Main(dbus.service.Object):
     def checkWakeup(self):
         """Check if started manually (True) or for a Timer or Plugin (False)"""
         # TODO include check for external wakeup sources
-        return self.dbus2vdr.Shutdown.ManualStart()
+        if self.dbus2vdr.checkVDRstatus():
+
+            return self.dbus2vdr.Shutdown.ManualStart()
+        else:
+            return True
 
     @dbus.service.method('de.yavdr.frontend', out_signature='i')
     def checkFrontend(self):
@@ -111,6 +122,10 @@ class Main(dbus.service.Object):
         self.frontends[old].detach()
         self.attach()
         if self.current == 'vdr':
+            self.dbus2vdr.Remote.Enable()
+        if self.wants_shutdown and self.frontends[
+                                        self.current].name == 'softhddevice':
+            self.send_shutdown()
             self.dbus2vdr.Remote.Enable()
         return self.getFrontend()
 
@@ -131,6 +146,7 @@ class Main(dbus.service.Object):
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def resume(self):
         status = self.frontends[self.current].resume()
+        self.dbus2vdr.Remote.Enable()
         # TODO: change background
         return status
 
@@ -140,9 +156,10 @@ class Main(dbus.service.Object):
 
     def soft_detach(self):
         logging.debug("running soft_detach")
-        self.detach()
-        logging.debug("add timer for send_shutdown")
-        self.timer = GObject.timeout_add(300000,self.send_shutdown)
+        if self.settings.get_setting('Frontend', 'attach', 'always') == 'auto':
+            self.detach()
+            logging.debug("add timer for send_shutdown")
+            self.timer = GObject.timeout_add(300000,self.send_shutdown)
         return False
 
     @dbus.service.method('de.yavdr.frontend',out_signature='b')
@@ -215,7 +232,7 @@ class Main(dbus.service.Object):
         logging.debug(args)
         if kwargs['member'] == "Ready":
             logging.debug("vdr ready")
-            self.startup()
+            self.prepare()
         elif kwargs['member'] == "Stop":
             logging.debug("vdr stopping")
             self.current = None
@@ -228,20 +245,14 @@ class Main(dbus.service.Object):
     def name_owner_changed(self, *args, **kwargs):
         if len(args[0]) == 0:
             logging.debug("vdr has no dbus name ownership")
+            self.current = None
         else:
             logging.debug("vdr has dbus name ownership")
-            self.current = None
         logging.debug(args)
 
     def set_toggle(self, target):
         while not next(self.switch) == self.target:
              pass
-
-    def sigint(self, signal, frame, **args):
-        logging.info("got %s" % signal)
-        self.frontends[self.current].detach()
-        #loop.quit()
-        sys.exit(0)
 
 
 class Settings:
@@ -303,13 +314,18 @@ class Options():
         (options, args) = self.parser.parse_args()
         return options
 
+def sigint(self, signal, frame, **args):
+    logging.info("got %s" % signal)
+    self.frontends[self.current].detach()
+    sys.exit()
+    loop.quit()
 
 
 if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
     options = Options()
     main = Main(options.get_options())
-    signal.signal(signal.SIGTERM, main.sigint)
-    signal.signal(signal.SIGINT, main.sigint)
+    signal.signal(signal.SIGTERM, sigint)
+    signal.signal(signal.SIGINT, sigint)
     loop = GObject.MainLoop()
     loop.run()
