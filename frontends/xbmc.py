@@ -55,6 +55,7 @@ class XBMC():
             logging.info(u"XBMC want's a shutdown")
             self.main.switchFrontend()
             #TODO: Remote handling
+            self.main.wants_shutdown = True
             self.main.dbus2vdr.Remote.HitKey(Power)
         elif condition == 16896:
             logging.info(u"XBMC wants a reboot")

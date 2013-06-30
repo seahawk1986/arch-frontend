@@ -126,6 +126,7 @@ class Main(dbus.service.Object):
         if self.wants_shutdown and self.frontends[
                                         self.current].name == 'softhddevice':
             self.send_shutdown()
+            self.wants_shutdown = False
             self.dbus2vdr.Remote.Enable()
         return self.getFrontend()
 
