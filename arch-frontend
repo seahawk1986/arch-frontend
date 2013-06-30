@@ -1,2 +1,2 @@
 #!/usr/bin/bash
-/usr/bin/python3 /usr/lib/python3.3/site-packages/frontend.py > /tmp/arch-frontend.log 2>&1
+/usr/bin/python3 /usr/lib/python3.3/site-packages/frontend.py
