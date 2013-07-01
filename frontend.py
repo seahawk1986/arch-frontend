@@ -75,6 +75,17 @@ class Main(dbus.service.Object):
         logging.debug("set main frontend to {0}".format(self.settings.frontend))
         self.startup()
 
+    def restart(self):
+        try:
+            self.frontends['vdr'].detach()
+        except: pass
+        self.frontends['vdr'] = self.get_vdrFrontend()
+        for frontend, obj in self.frontends.items():
+            if not obj:
+                logging.warning("using dummy frontend")
+                self.frontends[frontend] = vdrFrontend(self, 'dummy')
+        self.startup()
+
     def startup(self):
         self.wakeup = self.checkWakeup()
         logging.debug("running startup()")
@@ -86,6 +97,7 @@ class Main(dbus.service.Object):
                         self.settings.frontend == 'xbmc' and not self.current):
             self.frontends['xbmc'].attach()
             self.current = 'xbmc'
+            self.dbus2vdr.Remote.Disable()
             logging.debug('startup: frontend is xbmc')
         elif self.current == 'vdr' or (
                         self.settings.frontend == 'vdr' and not self.current):
@@ -215,8 +227,10 @@ class Main(dbus.service.Object):
         logging.debug("primary frontend is {0}".format(self.frontend.name))
 
     def get_xbmcFrontend(self):
-        if self.settings.xbmc:
+        if self.settings.xbmc and not self.current == 'xbmc':
             return XBMC(self)
+        elif self.current == 'xbmc':
+            return self.frontends[self.current]
         else:
             logging.warning("no XBMC configuration found")
             return None
@@ -235,10 +249,14 @@ class Main(dbus.service.Object):
         logging.debug(args)
         if kwargs['member'] == "Ready":
             logging.debug("vdr ready")
-            self.prepare()
+            if self.current == 'xbmc':
+                self.restart()
+            else:
+                self.prepare()
         elif kwargs['member'] == "Stop":
             logging.debug("vdr stopping")
-            self.current = None
+            if self.current == 'vdr':
+                self.current = None
         elif kwargs['member'] == "Start":
             logging.debug("vdr starting")
 
@@ -248,7 +266,8 @@ class Main(dbus.service.Object):
     def name_owner_changed(self, *args, **kwargs):
         if len(args[0]) == 0:
             logging.debug("vdr has no dbus name ownership")
-            self.current = None
+            if self.current == 'vdr':
+                self.current = None
         else:
             logging.debug("vdr has dbus name ownership")
         logging.debug(args)
