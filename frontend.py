@@ -48,7 +48,7 @@ class Main(dbus.service.Object):
         logging.debug(u"read settings from {0}".format(self.options.config))
         logging.debug(u"starting frontend script")
         # track vdr status changes
-        self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0)
+        self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0, watchdog=True)
         self.vdrStatusSignal()
         self.vdrDBusSignal()
         self.current = None
@@ -342,7 +342,7 @@ class Options():
         (options, args) = self.parser.parse_args()
         return options
 
-    
+
 
 if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
