@@ -49,9 +49,14 @@ class Main(dbus.service.Object):
         logging.debug(u"starting frontend script")
         # track vdr status changes
         self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0, watchdog=True)
-        self.vdrStatusSignal()
+        #self.vdrStatusSignal()
+        # bind function to Signal "Ready"
+        self.dbus2vdr.onSignal("Ready", self.onStart)
+        # bind function to Signal "Stop"
+        self.dbus2vdr.onSignal("Stop", self.onStop)
         self.vdrDBusSignal()
         self.current = None
+        self.vdrStatus = 0
         self.wants_shutdown = False
         signal.signal(signal.SIGTERM, self.sigint)
         signal.signal(signal.SIGINT, self.sigint)
@@ -103,11 +108,13 @@ class Main(dbus.service.Object):
                         self.settings.frontend == 'vdr' and not self.current):
             # check if vdr is ready
             if self.dbus2vdr.checkVDRstatus():
+                self.vdrStatus = 1
                 self.frontends['vdr'].resume()
                 self.current = 'vdr'
                 logging.debug("startup: using vdr frontend %s", self.current)
             else:
                 logging.debug("vdr not ready")
+                self.vdrStatus = 0
                 return
 
     def checkWakeup(self):
@@ -244,6 +251,21 @@ class Main(dbus.service.Object):
                                              path_keyword='path',
                                             )
 
+    def onStart(self, *args, **kwargs):
+        print("VDR Ready")
+        if self.current == 'xbmc':
+            self.restart()
+        else:
+            self.prepare()
+        self.vdrStatus == 1
+
+    def onStop(self, *args, **kwargs):
+        print("VDR stopped")
+        logging.debug("vdr stopping")
+        if self.current == 'vdr':
+            self.current = None
+        self.vdrStatus == 0
+
     def dbus2vdr_signal(self, *args, **kwargs):
         logging.debug("got signal %s", kwargs['member'])
         logging.debug(args)
@@ -268,6 +290,8 @@ class Main(dbus.service.Object):
             logging.debug("vdr has no dbus name ownership")
             if self.current == 'vdr':
                 self.current = None
+            if self.vdrStatus != 0:
+                onStop()
         else:
             logging.debug("vdr has dbus name ownership")
         logging.debug(args)
