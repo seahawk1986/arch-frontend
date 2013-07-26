@@ -51,7 +51,6 @@ class Main(dbus.service.Object):
         logging.debug("starting frontend script")
         # track vdr status changes
         self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0, watchdog=True)
-        #self.vdrStatusSignal()
         # bind function to Signal "Ready"
         self.dbus2vdr.onSignal("Ready", self.onStart)
         # bind function to Signal "Stop"
@@ -346,15 +345,6 @@ class Main(dbus.service.Object):
         else:
             logging.warning("no XBMC configuration found")
             return None
-
-    def vdrStatusSignal(self):
-        self.bus.add_signal_receiver(self.dbus2vdr_signal,
-                                             bus_name=self.dbus2vdr.vdr_obj,
-                                             sender_keyword='sender',
-                                             member_keyword='member',
-                                             interface_keyword='interface',
-                                             path_keyword='path',
-                                            )
 
     def onStart(self, *args, **kwargs):
         print("VDR Ready")
