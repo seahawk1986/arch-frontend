@@ -6,6 +6,7 @@ from gi.repository import GObject
 import logging
 import os
 import subprocess
+import time
 
 
 class XBMC():
@@ -21,6 +22,7 @@ class XBMC():
             ]
         )
         self.proc = None
+        self.block = False
         self.environ = os.environ
         logging.debug('xbmc command: %s', self.cmd)
 
@@ -36,21 +38,56 @@ class XBMC():
                                                     why="xbmc running",
                                                     mode="block"
                                                     )
+        except:
+            logging.warning("could not set shutdown-inhobitor")
+        try:
             self.proc = subprocess.Popen(self.cmd, shell=True, env=self.environ)
+            if self.proc:
+                self.block = True
             GObject.child_watch_add(self.proc.pid,self.on_exit,self.proc) # Add callback on exit
             logging.debug('started xbmc')
         except:
             logging.exception('could not start xbmc')
 
+    def kill_xbmc(self):
+        logging.debug("killing xbmc")
+
     def on_exit(self,pid, condition, data):
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
+        snd_free = False
+        while not snd_free:                                                     
+            logging.debug("check if xbmc has freed sound device")
+            fuser_pid = subprocess.Popen(['/usr/sbin/fuser', '-v', '/dev/snd/*p'], stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True)
+            fuser_pid.wait() 
+            stdout, stderr = fuser_pid.communicate()
+            if "xbmc" in str(stderr):
+                snd_free = False 
+                time.sleep(0.25)
+            else:                                                          
+                snd_free = True
+                logging.debug('xbmc has freed sound device')
+        self.block = False
+        #self.proc = None
+        #logging.debug("set proc to None")
         if condition == 0:
             logging.info(u"normal xbmc exit")
             if self.main.current == 'xbmc':
+                logging.debug("call switchFrontend")
                 self.main.switchFrontend()
+            else:
+                logging.debug("call completeFrontendSwitch")
+                self.main.completeFrontendSwitch()
         elif condition < 16384:
             logging.warn(u"abnormal exit: %s",condition)
-            self.main.frontends[self.main.current].resume()
+            if self.main.current == "xbmc" and self.main.settings.frontend == "xbmc":
+                logging.debug("resume xbmc after crash")
+                self.main.frontends[self.main.current].resume()
+            elif self.main.current == "xbmc":
+                logging.debug("switch frontend after crash")
+                self.main.switchFrontend()
+            else:
+                logging.debug("complete switch to other frontend")
+                self.main.completeFrontendSwitch()
         elif condition == 16384:
             logging.info(u"XBMC want's a shutdown")
             self.main.switchFrontend()
@@ -70,22 +107,27 @@ class XBMC():
     def detach(self,active=0):
         logging.info('stopping xbmc')
         try:
-            logging.debug('sending terminate signal')
             self.proc.terminate()
+            logging.debug('sending terminate signal')
         except:
             logging.info('xbmc already terminated')
-        self.proc = None
+        #self.proc = True
         #self.main_instance.vdrCommands.vdrRemote.disable()
 
     def status(self):
-        if self.proc:
-            state = 1
+        try:
+            logging.debug("xbmc status is %s", self.proc.poll())
+        except:
+            logging.debug("xbmc not running, self.block is %s", self.block)
+        if self.proc and not self.block:
+          return self.proc.poll() is None
+        elif self.block:
+          return 1
         else:
-            state = 0
-        return state
+          return 0
 
     def resume(self):
-        if self.proc:
+        if self.proc and self.proc.poll() is None:
             logging.debug("xbmc already running")
         else:
             self.attach()

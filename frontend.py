@@ -26,6 +26,7 @@ import itertools
 import logging
 from optparse import OptionParser
 import os
+import time
 import signal
 import struct
 import subprocess
@@ -140,7 +141,13 @@ class Main(dbus.service.Object):
         old = self.current
         self.current = next(self.switch)
         logging.debug("next frontend is {0}".format(self.current))
-        self.frontends[old].detach()
+        if self.frontends[old].status():
+            self.frontends[old].detach()
+        if self.current == "xbmc":
+            self.attach()
+        return self.getFrontend()
+
+    def completeFrontendSwitch(self):
         self.attach()
         if self.current == 'vdr':
             self.dbus2vdr.Remote.Enable()
@@ -291,7 +298,7 @@ class Main(dbus.service.Object):
             if self.current == 'vdr':
                 self.current = None
             if self.vdrStatus != 0:
-                onStop()
+                self.onStop()
         else:
             logging.debug("vdr has dbus name ownership")
         logging.debug(args)
