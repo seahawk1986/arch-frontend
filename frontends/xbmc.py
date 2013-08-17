@@ -41,7 +41,7 @@ class XBMC():
         except:
             logging.warning("could not set shutdown-inhobitor")
         try:
-            self.proc = subprocess.Popen(self.cmd, shell=True, env=self.environ)
+            self.proc = subprocess.Popen("exec " + self.cmd, shell=True, env=self.environ)
             if self.proc:
                 self.block = True
             GObject.child_watch_add(self.proc.pid,self.on_exit,self.proc) # Add callback on exit
@@ -50,7 +50,12 @@ class XBMC():
             logging.exception('could not start xbmc')
 
     def kill_xbmc(self):
-        logging.debug("killing xbmc")
+        logging.debug("trying to kill xbmc")
+        try:
+            self.proc.kill()
+            return False
+        except:
+            logging.exception("could not kill xbmc")
 
     def on_exit(self,pid, condition, data):
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
@@ -67,8 +72,6 @@ class XBMC():
                 snd_free = True
                 logging.debug('xbmc has freed sound device')
         self.block = False
-        #self.proc = None
-        #logging.debug("set proc to None")
         if condition == 0:
             logging.info(u"normal xbmc exit")
             if self.main.current == 'xbmc':
@@ -103,6 +106,10 @@ class XBMC():
             os.close(self.inhibitor.take())
         except:
             pass
+        try:
+            GObject.source_remove(self.killtimer)
+        except: pass
+        self.kiltimer = None
 
     def detach(self,active=0):
         logging.info('stopping xbmc')
@@ -111,8 +118,7 @@ class XBMC():
             logging.debug('sending terminate signal')
         except:
             logging.info('xbmc already terminated')
-        #self.proc = True
-        #self.main_instance.vdrCommands.vdrRemote.disable()
+        self.killtimer = GObject.timeout_add(2000,self.kill)
 
     def status(self):
         try:
