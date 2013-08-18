@@ -58,7 +58,7 @@ class lircConnection():
                 self.sock.close()
                 try:
                     if self.callback:
-                        print("remove callback for lircd socket")
+                        logging.debug("remove callback for lircd socket")
                         GObject.source_remove(self.callback)
                 except:
                     pass
@@ -75,11 +75,11 @@ class lircConnection():
             return True
         lines = buf.decode().split("    n")
         for line in lines:
-            logging.debug("key press")
+            logging.debug("got a key press")
             try:
                 code,count,cmd,device = line.split(" ")[:4]
                 if count != "0":
-                    #logging.debug('repeated keypress')
+                    logging.debug('repeated keypress')
                     return True
                 else:
                    try:
@@ -102,7 +102,7 @@ class lircConnection():
                         self.main.frontends[self.main.current].resume()
                     return True
                 elif cmd == self.main.settings.get_setting("Frontend", 'lirc_switch', None):
-                    print("switchFrontend")
+                    logging.debug("lirc.py: switchFrontend")
                     self.main.switchFrontend()
                     return True
 
