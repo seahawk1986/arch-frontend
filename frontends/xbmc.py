@@ -60,20 +60,20 @@ class XBMC():
     def on_exit(self,pid, condition, data):
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
         snd_free = False
-        while not snd_free:                                                     
+        while not snd_free:
             logging.debug("check if xbmc has freed sound device")
             fuser_pid = subprocess.Popen(['/usr/sbin/fuser', '-v', '/dev/snd/*p'], stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True)
-            fuser_pid.wait() 
+            fuser_pid.wait()
             stdout, stderr = fuser_pid.communicate()
             if "xbmc" in str(stderr):
-                snd_free = False 
+                snd_free = False
                 time.sleep(0.25)
-            else:                                                          
+            else:
                 snd_free = True
                 logging.debug('xbmc has freed sound device')
         self.block = False
         if condition == 0:
-            logging.info(u"normal xbmc exit")
+            logging.info("normal xbmc exit")
             if self.main.current == 'xbmc':
                 logging.debug("call switchFrontend")
                 self.main.switchFrontend()
