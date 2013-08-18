@@ -37,7 +37,7 @@ class lircConnection():
         logging.debug("try_connection")
         try:
             self.connect_lircd()
-            logging.info(u"conntected to Lirc-Socket on %s"%(self.socket_path))
+            logging.info("conntected to Lirc-Socket on %s"%(self.socket_path))
             return False
         except:
             GObject.timeout_add(1000, self.try_connection)
