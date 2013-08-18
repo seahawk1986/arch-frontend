@@ -46,8 +46,8 @@ class Main(dbus.service.Object):
         bus_name = dbus.service.BusName('de.yavdr.frontend', bus=self.bus)
         dbus.service.Object.__init__(self, bus_name, '/frontend')
         self.settings = Settings(self.options.config)
-        logging.debug(u"read settings from {0}".format(self.options.config))
-        logging.debug(u"starting frontend script")
+        logging.debug("read settings from {0}".format(self.options.config))
+        logging.debug("starting frontend script")
         # track vdr status changes
         self.dbus2vdr = DBus2VDR(dbus.SystemBus(), instance=0, watchdog=True)
         #self.vdrStatusSignal()
