@@ -149,16 +149,16 @@ class Main(dbus.service.Object):
         return self.getFrontend()
 
 def completeFrontendSwitch(self):
-        self.attach()
-        if self.current == 'vdr':
-            self.dbus2vdr.Remote.Enable()
-        if self.wants_shutdown and self.frontends[
-                                        self.current].name == 'softhddevice':
-            self.send_shutdown()
-            self.wants_shutdown = False
-            self.dbus2vdr.Remote.Enable()
-        logging.debug("frontend after switch: %s", self.current)
-        return self.getFrontend()
+    self.attach()
+    if self.current == 'vdr':
+        self.dbus2vdr.Remote.Enable()
+    if self.wants_shutdown and self.frontends[
+                                    self.current].name == 'softhddevice':
+        self.send_shutdown()
+        self.wants_shutdown = False
+        self.dbus2vdr.Remote.Enable()
+    logging.debug("frontend after switch: %s", self.current)
+    return self.getFrontend()
 
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def getFrontend(self):
