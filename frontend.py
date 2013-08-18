@@ -57,6 +57,7 @@ class Main(dbus.service.Object):
         self.dbus2vdr.onSignal("Stop", self.onStop)
         self.vdrDBusSignal()
         self.current = None
+        self.external = False
         self.vdrStatus = 0
         self.wants_shutdown = False
         signal.signal(signal.SIGTERM, self.sigint)
@@ -147,7 +148,7 @@ class Main(dbus.service.Object):
             self.attach()
         return self.getFrontend()
 
-    def completeFrontendSwitch(self):
+def completeFrontendSwitch(self):
         self.attach()
         if self.current == 'vdr':
             self.dbus2vdr.Remote.Enable()
@@ -167,7 +168,8 @@ class Main(dbus.service.Object):
     @dbus.service.method('de.yavdr.frontend', in_signature='s',
                          out_signature='b')
     def attach(self, options=None):
-        return self.frontends[self.current].attach(options)
+        if not self.external:
+            return self.frontends[self.current].attach(options)
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def detach(self):
@@ -175,14 +177,29 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def resume(self):
-        status = self.frontends[self.current].resume()
-        self.dbus2vdr.Remote.Enable()
-        # TODO: change background
-        return status
+        if not self.external:
+            status = self.frontends[self.current].resume()
+            self.dbus2vdr.Remote.Enable()
+            # TODO: change background
+            return status
 
     @dbus.service.method('de.yavdr.frontend', out_signature='i')
     def status(self):
-        return self.frontends[self.current].status()
+        if not self.external:
+           return self.frontends[self.current].status()
+        else: return 3
+
+    @dbus.service.method('de.yavdr.frontend', out_signature='b')
+    def begin_external(self):
+        self.external = True
+        self.detach()
+        return True
+
+    @dbus.service.method('de.yavdr.frontend', out_signature='b')
+    def end_external(self):
+        self.external = False
+        self.attach()
+        return True
 
     def soft_detach(self):
         logging.debug("running soft_detach")

@@ -44,6 +44,9 @@ class XBMC():
             self.proc = subprocess.Popen("exec " + self.cmd, shell=True, env=self.environ)
             if self.proc:
                 self.block = True
+            if self.proc.poll() is not None:
+               logging.warning("failed to start xbmc")
+               self.main.switchFrontend()
             GObject.child_watch_add(self.proc.pid,self.on_exit,self.proc) # Add callback on exit
             logging.debug('started xbmc')
         except:
@@ -75,8 +78,8 @@ class XBMC():
         if condition == 0:
             logging.info("normal xbmc exit")
             if self.main.current == 'xbmc':
-                logging.debug("call switchFrontend")
-                self.main.switchFrontend()
+                logging.debug("normal XBMC exit")
+                if not self.main.external: self.main.switchFrontend()
             else:
                 logging.debug("call completeFrontendSwitch")
                 self.main.completeFrontendSwitch()
