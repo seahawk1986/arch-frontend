@@ -81,7 +81,7 @@ class XBMC():
                 logging.debug("call completeFrontendSwitch")
                 self.main.completeFrontendSwitch()
         elif condition < 16384:
-            logging.warn(u"abnormal exit: %s",condition)
+            logging.warn("abnormal exit: %s",condition)
             if self.main.current == "xbmc" and self.main.settings.frontend == "xbmc":
                 logging.debug("resume xbmc after crash")
                 self.main.frontends[self.main.current].resume()
@@ -92,13 +92,13 @@ class XBMC():
                 logging.debug("complete switch to other frontend")
                 self.main.completeFrontendSwitch()
         elif condition == 16384:
-            logging.info(u"XBMC want's a shutdown")
+            logging.info("XBMC want's a shutdown")
             self.main.switchFrontend()
             #TODO: Remote handling
             self.main.wants_shutdown = True
             self.main.dbus2vdr.Remote.HitKey(Power)
         elif condition == 16896:
-            logging.info(u"XBMC wants a reboot")
+            logging.info("XBMC wants a reboot")
             #logging.info(self.main.powermanager.restart())
             # TODO: Reboot implementation via logind?
             self.main.switchFrontend()
