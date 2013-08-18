@@ -118,7 +118,7 @@ class XBMC():
             logging.debug('sending terminate signal')
         except:
             logging.info('xbmc already terminated')
-        self.killtimer = GObject.timeout_add(2000,self.kill)
+        self.killtimer = GObject.timeout_add(2000,self.kill_xbmc)
 
     def status(self):
         try:

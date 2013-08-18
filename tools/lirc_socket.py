@@ -12,6 +12,7 @@ DBusGMainLoop(set_as_default=True)
 class lircConnection():
     def __init__(self, main):
         self.main = main
+        self.main.timer = None
         self.socket_path = self.main.settings.get_setting('Frontend',
                                                           'lirc_socket',
                                                           None)
@@ -33,6 +34,7 @@ class lircConnection():
         self.callback = GObject.io_add_watch(self.sock, GObject.IO_IN, self.handler)
 
     def try_connection(self):
+        logging.debug("try_connection")
         try:
             self.connect_lircd()
             logging.info(u"conntected to Lirc-Socket on %s"%(self.socket_path))
@@ -56,6 +58,7 @@ class lircConnection():
                 self.sock.close()
                 try:
                     if self.callback:
+                        print("remove callback for lircd socket")
                         GObject.source_remove(self.callback)
                 except:
                     pass
@@ -72,6 +75,7 @@ class lircConnection():
             return True
         lines = buf.decode().split("    n")
         for line in lines:
+            logging.debug("key press")
             try:
                 code,count,cmd,device = line.split(" ")[:4]
                 if count != "0":
@@ -79,20 +83,26 @@ class lircConnection():
                     return True
                 else:
                    try:
-                       gobject.source_remove(self.main.timer)
-                   except: pass
+                       logging.debug("remove main.timer")
+                       GObject.source_remove(self.main.timer)
+                   except:
+                       #pass
+                       logging.debug("could not remove timer")
             except:
                 logging.exception(line)
                 return True
             logging.debug('Key press: %s',cmd)
-            logging.debug(self.main.current)
+            logging.debug("current frontend: %s", self.main.current)
             if self.main.current == 'vdr':
+                logging.debug("keypress for vdr")
                 if cmd == self.main.settings.get_setting("Frontend", "lirc_toggle", None):
                     if self.main.status() == 1:
                         self.main.detach()
                     else:
                         self.main.frontends[self.main.current].resume()
+                    return True
                 elif cmd == self.main.settings.get_setting("Frontend", 'lirc_switch', None):
+                    print("switchFrontend")
                     self.main.switchFrontend()
                     return True
 
