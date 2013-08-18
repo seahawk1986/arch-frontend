@@ -145,8 +145,7 @@ class Main(dbus.service.Object):
             self.frontends[old].detach()
         if self.current == "xbmc":
             self.attach()
-        #return self.getFrontend()
-        return True
+        return self.getFrontend()
 
     def completeFrontendSwitch(self):
         self.attach()
@@ -157,9 +156,8 @@ class Main(dbus.service.Object):
             self.send_shutdown()
             self.wants_shutdown = False
             self.dbus2vdr.Remote.Enable()
-        #return self.getFrontend()
         logging.debug("frontend after switch: %s", self.current)
-        return True
+        return self.getFrontend()
 
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def getFrontend(self):
