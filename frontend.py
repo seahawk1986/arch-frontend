@@ -193,6 +193,20 @@ class Main(dbus.service.Object):
     def begin_external(self):
         self.external = True
         self.detach()
+        snd_free = False
+        while not snd_free:
+            logging.debug("check if frontend has freed sound device")
+            fuser_pid = subprocess.Popen(['/usr/sbin/fuser', '-v', '/dev/snd/*p'], stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True)
+            fuser_pid.wait()
+            stdout, stderr = fuser_pid.communicate()
+            logging.debug("fuser output: %s", stderr)
+            if ("xbmc") in str(stderr) or str(stderr).endswith("vdr"):
+                snd_free = False
+                time.sleep(0.25)
+            else:
+                snd_free = True
+                logging.debug('xbmc has freed sound device')
+
         return True
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
