@@ -75,36 +75,37 @@ class XBMC():
                 snd_free = True
                 logging.debug('xbmc has freed sound device')
         self.block = False
-        if condition == 0:
-            logging.info("normal xbmc exit")
-            if self.main.current == 'xbmc':
-                logging.debug("normal XBMC exit")
-                if not self.main.external: self.main.switchFrontend()
-            else:
-                logging.debug("call completeFrontendSwitch")
-                self.main.completeFrontendSwitch()
-        elif condition < 16384:
-            logging.warn("abnormal exit: %s",condition)
-            if self.main.current == "xbmc" and self.main.settings.frontend == "xbmc":
-                logging.debug("resume xbmc after crash")
-                self.main.frontends[self.main.current].resume()
-            elif self.main.current == "xbmc":
-                logging.debug("switch frontend after crash")
+        if not self.main.external:
+            if condition == 0:
+                logging.info("normal xbmc exit")
+                if self.main.current == 'xbmc':
+                    logging.debug("normal XBMC exit")
+                    if not self.main.external: self.main.switchFrontend()
+                else:
+                    logging.debug("call completeFrontendSwitch")
+                    self.main.completeFrontendSwitch()
+            elif condition < 16384:
+                logging.warn("abnormal exit: %s",condition)
+                if self.main.current == "xbmc" and self.main.settings.frontend == "xbmc":
+                    logging.debug("resume xbmc after crash")
+                    self.main.frontends[self.main.current].resume()
+                elif self.main.current == "xbmc":
+                    logging.debug("switch frontend after crash")
+                    self.main.switchFrontend()
+                else:
+                    logging.debug("complete switch to other frontend")
+                    self.main.completeFrontendSwitch()
+            elif condition == 16384:
+                logging.info("XBMC want's a shutdown")
                 self.main.switchFrontend()
-            else:
-                logging.debug("complete switch to other frontend")
-                self.main.completeFrontendSwitch()
-        elif condition == 16384:
-            logging.info("XBMC want's a shutdown")
-            self.main.switchFrontend()
-            #TODO: Remote handling
-            self.main.wants_shutdown = True
-            self.main.dbus2vdr.Remote.HitKey(Power)
-        elif condition == 16896:
-            logging.info("XBMC wants a reboot")
-            #logging.info(self.main.powermanager.restart())
-            # TODO: Reboot implementation via logind?
-            self.main.switchFrontend()
+                #TODO: Remote handling
+                self.main.wants_shutdown = True
+                self.main.dbus2vdr.Remote.HitKey(Power)
+            elif condition == 16896:
+                logging.info("XBMC wants a reboot")
+                #logging.info(self.main.powermanager.restart())
+                # TODO: Reboot implementation via logind?
+                self.main.switchFrontend()
         try:
             os.close(self.inhibitor.take())
         except:

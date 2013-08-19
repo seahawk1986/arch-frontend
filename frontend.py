@@ -200,7 +200,7 @@ class Main(dbus.service.Object):
             fuser_pid.wait()
             stdout, stderr = fuser_pid.communicate()
             logging.debug("fuser output: %s", stderr)
-            if ("xbmc") in str(stderr) or str(stderr).endswith("vdr"):
+            if ("xbmc") in str(stderr) or "vdr" in str(stderr):
                 snd_free = False
                 time.sleep(0.25)
             else:
