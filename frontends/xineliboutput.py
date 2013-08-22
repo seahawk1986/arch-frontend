@@ -7,6 +7,7 @@ from frontends.base import *
 import os
 import socket
 import subprocess
+import time
 
 class VDRsxfe():
     def __init__(self, main, path='/usr/bin/vdr-sxfe',
