@@ -169,6 +169,7 @@ class Main(dbus.service.Object):
                          out_signature='b')
     def attach(self, options=None):
         if not self.external:
+            subprocess.call(['/usr/bin/xset', 'dpms', 'force', 'on'], env=os.env)
             return self.frontends[self.current].attach(options)
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
@@ -200,7 +201,7 @@ class Main(dbus.service.Object):
             fuser_pid.wait()
             stdout, stderr = fuser_pid.communicate()
             logging.debug("fuser output: %s", stderr)
-            if ("xbmc") in str(stderr) or "vdr" in str(stderr):
+            if ("xbmc") in str(stderr) or str(stderr).endswith("vdr"):
                 snd_free = False
                 time.sleep(0.25)
             else:
