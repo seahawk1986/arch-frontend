@@ -169,7 +169,7 @@ class Main(dbus.service.Object):
                          out_signature='b')
     def attach(self, options=None):
         if not self.external:
-            subprocess.call(['/usr/bin/xset', 'dpms', 'force', 'on'], env=os.env)
+            subprocess.call(['/usr/bin/xset', 'dpms', 'force', 'on'], env=os.environ)
             return self.frontends[self.current].attach(options)
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
