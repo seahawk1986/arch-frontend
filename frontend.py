@@ -168,8 +168,11 @@ class Main(dbus.service.Object):
     @dbus.service.method('de.yavdr.frontend', in_signature='s',
                          out_signature='b')
     def attach(self, options=None):
+        GObject.source_remove(self.timer)
         if not self.external:
             subprocess.call(['/usr/bin/xset', 'dpms', 'force', 'on'], env=os.environ)
+            subprocess.call(['/usr/bin/xset', 's', 'activate'], env=os.environ)
+            subprocess.call(['/usr/bin/xset', 's', 'off'], env=os.environ)
             return self.frontends[self.current].attach(options)
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
@@ -215,10 +218,11 @@ class Main(dbus.service.Object):
         self.external = False
         self.attach()
         return True
-
+    @dbus.service.method('de.yavdr.frontend',out_signature='b')
     def soft_detach(self):
         logging.debug("running soft_detach")
-        if self.settings.get_setting('Frontend', 'attach', 'always') == 'auto':
+        if self.settings.get_setting('Frontend', 'attach', 'always') in [
+                                                            'auto', 'always']:
             self.detach()
             logging.debug("add timer for send_shutdown")
             self.timer = GObject.timeout_add(300000,self.send_shutdown)
@@ -226,11 +230,17 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend',out_signature='b')
     def send_shutdown(self,user=False):
-        if  self.dbus2vdr.Shutdown.ConfirmShutdown(user):
+        disable_remote = False
+        if  self.dbus2vdr.Shutdown.ConfirmShutdown(user) and self.check_lifeguard():
             logging.debug("send 'HitKey POWER' to vdr")
-            self.dbus2vdr.Remote.Enable()
+            if not self.dbus2vdr.Remote.Status():
+                self.dbus2vdr.Remote.Enable()
+                disable_remote = True
             self.dbus2vdr.Remote.HitKey("POWER")
-            self.dbus2vdr.Remote.Disable()
+            if disable_remote:
+                self.dbus2vdr.Remote.Disable()
+        else:
+            logging.debug("send_shutdown: VDR not ready to shut down")
         return True
 
 
@@ -259,6 +269,20 @@ class Main(dbus.service.Object):
         except Exception as error:
             logging.exception(error)
             logging.warning("could not set inhibitor lock")
+
+    def check_lifeguard(self):
+        try:
+            if_lifeguard = "org.yavdr.lifeguard"
+            lifeguard = self.bus.get_object('org.yavdr.lifeguard', "/Lifeguard")
+            status, text = lifeguard.Check(dbus_interface=if_lifeguard)
+            if not status:
+                logging.debug("lifeguard-ng is not ready to shutdown")
+                return False
+        except Exception as error:
+            logging.exception(error)
+            logging.debug("could not reach lifeguard-ng")
+        finally:
+            return True
 
     def get_vdrFrontend(self):
         if self.dbus2vdr.Plugins.check_plugin('softhddevice'):
