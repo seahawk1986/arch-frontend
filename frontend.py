@@ -170,9 +170,19 @@ class Main(dbus.service.Object):
     def attach(self, options=None):
         GObject.source_remove(self.timer)
         if not self.external:
-            subprocess.call(['/usr/bin/xset', 'dpms', 'force', 'on'], env=os.environ)
-            subprocess.call(['/usr/bin/xset', 's', 'activate'], env=os.environ)
-            subprocess.call(['/usr/bin/xset', 's', 'off'], env=os.environ)
+            x = subprocess.call(['/usr/bin/xdotool', 'key', 'ctrl'],
+                                env=os.environ, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+            a = subprocess.call(['/usr/bin/xset', 'dpms', 'force', 'on'],
+                                env=os.environ, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+            b = subprocess.call(['/usr/bin/xset', 's', 'activate'], env=os.environ,
+                            env=os.environ, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+            c = subprocess.call(['/usr/bin/xset', 's', 'off'], env=os.environ,
+                            env=os.environ, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+            logging.debug(x.communicate(),a.communitcate(),b.communicate(),c.communicate())
             return self.frontends[self.current].attach(options)
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
