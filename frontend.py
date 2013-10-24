@@ -168,26 +168,30 @@ class Main(dbus.service.Object):
     @dbus.service.method('de.yavdr.frontend', in_signature='s',
                          out_signature='b')
     def attach(self, options=None):
-        GObject.source_remove(self.timer)
+        try:
+            GObject.source_remove(self.timer)
+        except:
+            pass
         if not self.external:
-            x = subprocess.call(['/usr/bin/xdotool', 'key', 'ctrl'],
+            x = subprocess.Popen(['/usr/bin/xdotool', 'key', 'ctrl'],
                                 env=os.environ,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-            a = subprocess.call(['/usr/bin/xset', 'dpms', 'force', 'on'],
+            a = subprocess.Popen(['/usr/bin/xset', 'dpms', 'force', 'on'],
                                 env=os.environ,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-            b = subprocess.call(['/usr/bin/xset', 's', 'activate'],
+            b = subprocess.Popen(['/usr/bin/xset', 's', 'activate'],
                                 env=os.environ,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-            c = subprocess.call(['/usr/bin/xset', 's', 'off'],
+            c = subprocess.Popen(['/usr/bin/xset', 's', 'off'],
                                env=os.environ,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-            logging.debug(x.communicate(),a.communitcate(),b.communicate(),c.communicate())
-            return self.frontends[self.current].attach(options)
+            #logging.debug(x.communicate(),a.communitcate(),b.communicate(),c.communicate())
+            if self.current:
+                return self.frontends[self.current].attach(options)
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def detach(self):
@@ -203,8 +207,10 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', out_signature='i')
     def status(self):
-        if not self.external:
+        if not self.external and self.current:
            return self.frontends[self.current].status()
+        elif not self.current:
+           return 0
         else: return 3
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
@@ -261,13 +267,14 @@ class Main(dbus.service.Object):
     @dbus.service.method('de.yavdr.frontend', in_signature='s',
                          out_signature='b')
     def setBackground(self, background=False):
+        path = None
         if self.status() == 0:
             if not background:
                 path = self.settings.get_setting('Frontend', 'bg_detached', None)
         elif self.status() == 1:
             if not background:
                 path = self.settings.get_setting('Frontend', 'bg_attached', None)
-        if path is not None:
+        if path:
             pass
             #TODO: set background
         else:
