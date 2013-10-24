@@ -101,7 +101,7 @@ class Main(dbus.service.Object):
             self.current = self.settings.frontend
             self.setBackground('detached')
             return
-        if self.current == 'xbmc' or (
+        elif self.current == 'xbmc' or (
                         self.settings.frontend == 'xbmc' and not self.current):
             self.frontends['xbmc'].attach()
             self.current = 'xbmc'
