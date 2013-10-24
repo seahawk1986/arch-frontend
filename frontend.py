@@ -98,6 +98,7 @@ class Main(dbus.service.Object):
         logging.debug("running startup()")
         if self.settings.attach == 'never' or (
                         self.settings.attach == 'auto' and not self.wakeup):
+            self.current = self.settings.frontend
             self.setBackground('detached')
             return
         if self.current == 'xbmc' or (
