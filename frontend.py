@@ -182,7 +182,7 @@ class Main(dbus.service.Object):
                                 env=os.environ,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-            b = subprocess.Popen(['/usr/bin/xset', 's', 'activate'],
+            b = subprocess.Popen(['/usr/bin/xset', '-dpms',],
                                 env=os.environ,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
