@@ -174,7 +174,7 @@ class Main(dbus.service.Object):
         except:
             pass
         if not self.external:
-            x = subprocess.Popen(['/usr/bin/xdotool', 'key', 'ctrl'],
+            '''x = subprocess.Popen(['/usr/bin/xdotool', 'key', 'ctrl'],
                                 env=os.environ,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
@@ -190,7 +190,7 @@ class Main(dbus.service.Object):
                                env=os.environ,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-            #logging.debug(x.communicate(),a.communitcate(),b.communicate(),c.communicate())
+            #logging.debug(x.communicate(),a.communitcate(),b.communicate(),c.communicate())'''
             if self.current:
                 return self.frontends[self.current].attach(options)
 
