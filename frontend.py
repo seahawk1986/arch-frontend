@@ -133,7 +133,6 @@ class Main(dbus.service.Object):
     def checkFrontend(self):
         return self.status()
 
-
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def switchFrontend(self):
         if  self.status() == 2:
@@ -276,8 +275,8 @@ class Main(dbus.service.Object):
             if not background:
                 path = self.settings.get_setting('Frontend', 'bg_attached', None)
         if path:
+            subprocess.call(["/usr/bin/feh", "--bg-fill", path], env=os.environ)
             pass
-            #TODO: set background
         else:
             pass
 
