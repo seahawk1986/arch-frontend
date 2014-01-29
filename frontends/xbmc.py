@@ -128,14 +128,18 @@ class XBMC():
 
     def status(self):
         try:
-            logging.debug("xbmc status is %s", self.proc.poll())
+            logging.debug("xbmc status is %s, self.block is %s" %(self.proc.poll(), self.block))
         except:
             logging.debug("xbmc not running, self.block is %s", self.block)
-        if self.proc and not self.block:
-          return self.proc.poll() is None
-        elif self.block:
+        if self.proc == None:
+          return 0
+        elif self.block == False:
+          return 0
+        elif self.block == True:
+          logging.debug("self.block is True: xbmc is running")
           return 1
         else:
+          logging.debug("self.block is False: xbmc is not running")
           return 0
 
     def resume(self):
