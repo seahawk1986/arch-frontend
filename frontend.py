@@ -36,6 +36,7 @@ from frontends.base import vdrFrontend
 from frontends.Softhddevice import Softhddevice
 from frontends.xbmc import XBMC
 from frontends.xineliboutput import VDRsxfe
+from frontends.xine import Xine
 from tools.lirc_socket import lircConnection
 
 
@@ -321,9 +322,9 @@ class Main(dbus.service.Object):
             return Softhddevice(self, 'softhddevice')
         elif self.dbus2vdr.Plugins.check_plugin('xineliboutput'):
             return VDRsxfe(self, 'vdr-sxfe')
-        #TODO: add xine frontend support
-        #elif self.dbus2vdr.Plugins.check_plugin('xine') and self.xine:
-        #    self.frontend = Xine(self, 'xine')
+        elif self.dbus2vdr.Plugins.check_plugin('xine'):
+            return Xine(self, 'xine')
+
         else:
             logging.warning("no vdr frontend found")
             return None
