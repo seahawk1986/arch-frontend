@@ -80,7 +80,9 @@ class XBMC():
                 logging.info("normal xbmc exit")
                 if self.main.current == 'xbmc':
                     logging.debug("normal XBMC exit")
-                    if not self.main.external: self.main.switchFrontend()
+                    if not self.main.external:
+                        self.main.switchFrontend()
+                        self.main.completeFrontendSwitch()
                 else:
                     logging.debug("call completeFrontendSwitch")
                     self.main.completeFrontendSwitch()
