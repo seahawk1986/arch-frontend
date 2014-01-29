@@ -37,18 +37,20 @@ class Xine():
         self.environ = os.environ
         logging.debug(' '.join(self.cmd))
 
-    def attach(self):
+    def attach(self, options=None):
         logging.debug('starting xine')
         logging.debug('self.cmd')
         self.proc = subprocess.Popen("exec " + self.cmd,
                                      shell=True, env=os.environ)
         logging.debug('started xine')
 
-    def detach(self,active=0):
+    def detach(self, active=0):
         logging.debug('stopping xine')
         try:
-            self.proc.terminate()
-        except:
+            self.proc.kill()
+            return True
+        except Exception as e:
+            logging.exception(e)
             logging.debug('xine already terminated')
         self.proc = None
 
