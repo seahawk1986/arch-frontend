@@ -17,9 +17,8 @@ class XBMC():
         # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
         #self.cmd = self.main.settings.get_setting('XBMC', 'xbmc')
-        self.cmd = self.main.settings.get_setting('XBMC', 'xbmc', [
+        self.cmd = self.main.settings.get_setting('XBMC', 'xbmc', 
             '/usr/lib/xbmc/xbmc.bin --standalone --lircdev /var/run/lirc/lircd'
-            ]
         )
         self.proc = None
         self.block = False
