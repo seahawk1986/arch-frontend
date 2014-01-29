@@ -99,7 +99,7 @@ class Main(dbus.service.Object):
         if self.settings.attach == 'never' or (
                         self.settings.attach == 'auto' and not self.wakeup):
             self.current = self.settings.frontend
-            self.setBackground('detached')
+            self.setBackground()
             return
         elif self.current == 'xbmc' or (
                         self.settings.frontend == 'xbmc' and not self.current):
@@ -192,10 +192,13 @@ class Main(dbus.service.Object):
             #logging.debug(x.communicate(),a.communitcate(),b.communicate(),c.communicate())'''
             if self.current:
                 return self.frontends[self.current].attach(options)
+            self.setBackground()
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def detach(self):
-        return self.frontends[self.current].detach()
+        answer = self.frontends[self.current].detach()
+        self.setBackground()
+        return answer
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def resume(self):
@@ -203,6 +206,7 @@ class Main(dbus.service.Object):
             status = self.frontends[self.current].resume()
             self.dbus2vdr.Remote.Enable()
             # TODO: change background
+            self.setBackground()
             return status
 
     @dbus.service.method('de.yavdr.frontend', out_signature='i')
@@ -266,16 +270,23 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', in_signature='s',
                          out_signature='b')
-    def setBackground(self, background=False):
-        path = None
-        if self.status() == 0:
-            if not background:
+    def setBackground(self, path=None):
+        status = self.status ()
+        logging.debug("setBackground: status is %s, type is %s" % (status, type(status)))
+        if status == 0:
+            logging.debug("status is 0")
+            if not path:
+                logging.debug("path not yet defined")
+                logging.debug(self.settings.get_setting('Frontend', 'bg_detached', None))
                 path = self.settings.get_setting('Frontend', 'bg_detached', None)
-        elif self.status() == 1:
-            if not background:
+        elif status == 1:
+            if not path:
                 path = self.settings.get_setting('Frontend', 'bg_attached', None)
+        logging.debug("Background path is %s" % path)
         if path:
-            subprocess.call(["/usr/bin/feh", "--bg-fill", path], env=os.environ)
+            logging.debug("command for setting bg is: /usr/bin/feh --bg-fill %s" % (path))
+            a = subprocess.call(["/usr/bin/feh", "--bg-fill", path], env=os.environ)
+            #logging.debug("feh call: %s\n%s" % (a.communicate())
             pass
         else:
             pass
