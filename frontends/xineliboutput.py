@@ -25,11 +25,9 @@ class VDRsxfe():
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
         self.cmd = self.main.settings.get_setting("xineliboutput",
                                                   "xineliboutput_cmd",
-                                                  [
-            '/usr/bin/vdr-sxfe --post tvtime:method=use_vo_driver \
+            '''/usr/bin/vdr-sxfe --post tvtime:method=use_vo_driver \
             --reconnect --audio=alsa \
-            --syslog xvdr+tcp://{0}:{1}'.format(origin,port)
-            ]
+            --syslog xvdr+tcp://{0}:{1}'''.format(origin,port)
                                                   )
         self.proc = None
         self.environ = os.environ
