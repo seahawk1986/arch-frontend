@@ -41,7 +41,7 @@ class VDRsxfe():
             while not self.isOpen():
                 time.sleep(1)
             logging.info('starting vdr-sxfe')
-            self.proc = subprocess.Popen(self.cmd,shell=True,env=self.environ)
+            self.proc = subprocess.Popen("exec " + self.cmd,shell=True,env=self.environ)
             logging.debug('started vdr-sxfe')
         elif self.mode == 'local' and self.status() == 0:
             self.main.dbus2vdr.Plugins.SVDRPCommand('xinelibputput', 'LFRO',
