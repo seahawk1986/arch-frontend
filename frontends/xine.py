@@ -38,7 +38,6 @@ class Xine():
             )
         self.proc = None
         self.environ = os.environ
-        logging.debug(' '.join(self.cmd))
 
     def attach(self, options=None):
         logging.debug('starting xine')
