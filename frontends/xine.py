@@ -71,6 +71,7 @@ class Xine():
         self.proc = None
         logging.debug("xine exit code was:", condition)
         if condition == 0:
-            self.main.detach()
+            self.proc = None
+            return
         else:
             self.main.attach()
