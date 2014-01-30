@@ -444,8 +444,6 @@ class Settings:
             )
         # frontend settings: primary: vdr|xbmc
         self.frontend = self.get_setting('Frontend', 'frontend', "vdr")
-        self.xine = self.get_setting("Frontend", 'xine', None)
-        self.xineliboutput = self.get_setting('Frontend', 'xineliboutput', None)
         self.xbmc = self.get_setting('XBMC', 'xbmc', None)
         # attach always|never|auto
         self.attach = self.get_setting('Frontend', 'attach', 'always')
