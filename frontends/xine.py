@@ -25,14 +25,17 @@ class Xine():
         # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
 
-        self.cmd = '''/usr/bin/xine --post tvtime:method=use_vo_driver \
+        self.cmd = self.main.settings.get_setting("Xine",
+                                                  "xine_cmd",
+            '''/usr/bin/xine --post tvtime:method=use_vo_driver \
             --config /etc/xine/config \
             --keymap=file:/etc/xine/keymap \
             --post vdr --post vdr_video --post vdr_audio --verbose=2 \
             --no-gui --no-logo --no-splash --deinterlace -pq \
             -A pulseaudio \
-            %s %s \
-            vdr:/tmp/vdr-xine/stream#demux:mpeg_pes'''%(autocrop, aspectratio)
+            {autocrop} {aspectratio} \
+            vdr:/tmp/vdr-xine/stream#demux:mpeg_pes'''.format(autocrop=autocrop, aspectratio=aspectratio)
+            )
         self.proc = None
         self.environ = os.environ
         logging.debug(' '.join(self.cmd))
