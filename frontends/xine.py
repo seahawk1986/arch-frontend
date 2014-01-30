@@ -2,6 +2,7 @@
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+from gi.repository import GObject
 import logging
 from frontends.base import *
 import os
@@ -44,6 +45,7 @@ class Xine():
         logging.debug('self.cmd')
         self.proc = subprocess.Popen("exec " + self.cmd,
                                      shell=True, env=os.environ)
+        GObject.child_watch_add(self.proc.pid,self.on_exit,self.proc) # Add callback on exit
         logging.debug('started xine')
 
     def detach(self, active=0):
@@ -63,3 +65,8 @@ class Xine():
     def resume(self):
         if self.proc: pass
         else: self.attach()
+
+    def on_exit(self,pid, condition, data):
+        logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
+        self.proc = None
+        logging.debug("xine exit code was:", condition)
