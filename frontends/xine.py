@@ -70,3 +70,7 @@ class Xine():
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
         self.proc = None
         logging.debug("xine exit code was:", condition)
+        if condition == 0:
+            self.main.detach()
+        else:
+            self.main.attach()
