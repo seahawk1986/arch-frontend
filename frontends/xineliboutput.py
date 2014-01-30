@@ -2,6 +2,7 @@
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+from gi.repository import GObject
 import logging
 from frontends.base import *
 import os
@@ -26,7 +27,7 @@ class VDRsxfe():
         self.cmd = self.main.settings.get_setting("xineliboutput",
                                                   "xineliboutput_cmd",
             '''/usr/bin/vdr-sxfe --post tvtime:method=use_vo_driver \
-            --reconnect --audio=alsa \
+            --audio=alsa \
             --syslog xvdr+tcp://{0}:{1}'''.format(origin,port)
                                                   )
         self.proc = None
@@ -40,6 +41,7 @@ class VDRsxfe():
                 time.sleep(1)
             logging.info('starting vdr-sxfe')
             self.proc = subprocess.Popen("exec " + self.cmd,shell=True,env=self.environ)
+            GObject.child_watch_add(self.proc.pid,self.on_exit,self.proc) # Add callback on exit
             logging.debug('started vdr-sxfe')
         elif self.mode == 'local' and self.status() == 0:
             self.main.dbus2vdr.Plugins.SVDRPCommand('xinelibputput', 'LFRO',
@@ -76,6 +78,11 @@ class VDRsxfe():
         elif self.mode == 'local':
             if self.state == 0:
                 self.attach()
+                
+    def on_exit(self,pid, condition, data):
+        logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
+        self.state = 0
+        logging.debug("vdr-sxfe exit code was:", condition)
 
     def isOpen(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
