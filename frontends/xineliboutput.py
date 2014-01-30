@@ -85,6 +85,7 @@ class VDRsxfe():
         logging.debug("vdr-sxfe exit code was:", condition)
         if condition == 0:
             self.main.detach()
+            self.proc = None
         else:
             self.main.attach()
 
