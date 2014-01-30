@@ -83,7 +83,10 @@ class VDRsxfe():
         logging.debug("called function with pid=%s, condition=%s, data=%s",pid, condition,data)
         self.state = 0
         logging.debug("vdr-sxfe exit code was:", condition)
-        self.main.detach()
+        if condition == 0:
+            self.main.detach()
+        else:
+            self.main.attach()
 
     def isOpen(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
