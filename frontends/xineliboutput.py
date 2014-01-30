@@ -51,6 +51,7 @@ class VDRsxfe():
             logging.info('stopping vdr-sxfe')
             try:
                 self.proc.kill()
+                return True
             except:
                 logging.info('vdr-sxfe already terminated')
             self.proc = None
