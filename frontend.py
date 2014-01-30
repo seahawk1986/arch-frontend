@@ -134,6 +134,14 @@ class Main(dbus.service.Object):
     def checkFrontend(self):
         return self.status()
 
+    @dbus.service.method('de.yavdr.frontend', out_signature='b')
+    def toggleFrontend(self):
+        if self.status() == 1:
+            self.detach()
+        else:
+            self.frontends[self.current].resume()
+        return True
+
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def switchFrontend(self):
         if  self.status() == 2:
