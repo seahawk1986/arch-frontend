@@ -8,7 +8,7 @@ import os
 import subprocess
 
 class Xine():
-    def __init__(self, main, name, path='/usr/bin/xine',origin='127.0.0.1',port='37890'):
+    def __init__(self, main, name):
         self.main = main
         self.name = name
         if self.main.settings.get_settingb('xine', 'autocrop', False):
