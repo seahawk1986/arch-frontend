@@ -398,6 +398,7 @@ class Main(dbus.service.Object):
     def sigint(self, signal, *args, **kwargs):
         logging.info("got %s" % signal)
         self.frontends[self.current].detach()
+        time.sleep(1)
         self.loop.quit()
         sys.exit()
 
