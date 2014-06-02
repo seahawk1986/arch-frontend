@@ -12,11 +12,11 @@ class Xine():
     def __init__(self, main, name):
         self.main = main
         self.name = name
-        if self.main.settings.get_settingb('xine', 'autocrop', False):
+        if self.main.settings.get_settingb('Xine', 'autocrop', False):
             autocrop = "--post autocrop:enable_autodetect=1,enable_subs_detect=1,soft_start=1,stabilize=1"
         else:
             autocrop = ""
-        if self.main.settings.get_settingb('xine', 'anamorphic', False):
+        if self.main.settings.get_settingb('Xine', 'anamorphic', False):
             aspectratio = "--aspect-ratio=%s"%(self.main.settings.get_setting(
                                                 'xine', 'aspect_ratio', '16:9')
             )

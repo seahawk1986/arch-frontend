@@ -24,7 +24,7 @@ class VDRsxfe():
         os.environ['__GL_SYNC_TO_VBLANK']="1"
         # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
-        self.cmd = self.main.settings.get_setting("xineliboutput",
+        self.cmd = self.main.settings.get_setting("Xineliboutput",
                                                   "xineliboutput_cmd",
             '''/usr/bin/vdr-sxfe --post tvtime:method=use_vo_driver \
             --audio=alsa \
