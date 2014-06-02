@@ -395,6 +395,13 @@ class Main(dbus.service.Object):
         while not next(self.switch) == self.target:
              pass
 
+    @dbus.service.method('de.yavdr.frontend')
+    def quit(self):
+        logging.info("quit frontend script")
+        self.frontends[self.current].detach()
+        self.loop.quit()
+        sys.exit()
+
     def sigint(self, signal, *args, **kwargs):
         logging.info("got %s" % signal)
         self.frontends[self.current].detach()
