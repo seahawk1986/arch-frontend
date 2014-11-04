@@ -467,5 +467,5 @@ if __name__ == '__main__':
     main = Main(options.get_options())
     #signal.signal(signal.SIGTERM, sigint)
     #signal.signal(signal.SIGINT, sigint)
-    loop = GObject.MainLoop()
-    loop.run()
+    main.loop = GObject.MainLoop()
+    main.loop.run()

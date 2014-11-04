@@ -9,7 +9,7 @@ import os
 
 class Softhddevice(vdrFrontend):
     def __init__(self, main, dbus2vdr, name="softhddevice"):
-                super().__init__(main, dbus2vdr)
+        super().__init__(main, dbus2vdr)
 
     def get_settings(self):
         self.options = self.main.settings.get_setting('Softhddevice',
