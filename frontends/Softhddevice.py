@@ -19,12 +19,10 @@ class Softhddevice(vdrFrontend):
 
     def attach(self, options=None):
         try:
-            if self.main.settings.get_settingb('Softhddevice',
-                                               'keep_inactive', False):
-                if self.main.dbus2vdr.Shutdown.ConfirmShutdown()[0] == 901:
-                    user_active = True
-                else:
-                    user_active = False
+            if self.main.dbus2vdr.Shutdown.ConfirmShutdown()[0] == 901:
+                user_active = True
+            else:
+                user_active = False
             if not options:
                 options = self.get_options()
             code, result = self.main.dbus2vdr.Plugins.SVDRPCommand(

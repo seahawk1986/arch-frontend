@@ -101,7 +101,7 @@ class VDRsxfe(vdrFrontend):
         logging.debug("called function with pid=%s, condition=%s, data=%s",
                       pid, condition, data)
         self.state = 0
-        logging.debug("vdr-sxfe exit code was:", condition)
+        logging.debug("vdr-sxfe exit code was: %s", condition)
         if condition == 0:
             self.main.detach()
             self.proc = None

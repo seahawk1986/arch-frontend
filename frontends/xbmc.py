@@ -52,6 +52,8 @@ class XBMC():
             logging.debug('started xbmc')
         except:
             logging.exception('could not start xbmc')
+            return False
+        return True
 
     def kill_xbmc(self):
         logging.debug("trying to kill xbmc")

@@ -157,10 +157,10 @@ class Main(dbus.service.Object):
             self.attach()
         return self.getFrontend()
 
-    @dbus.service.method('de.yavdr.frontend', out_signature='b')
-    tempDisplay(self):
+    @dbus.service.method('de.yavdr.frontend', out_signature='s')
+    def tempDisplay(self):
         self.settings.update_display(os.environ['DISPLAY'])
-        return True
+        retun os.environ['DISPLAY']
 
     @dbus.service.method('de.yavdr.frontend',
                          in_signature='s',
@@ -480,7 +480,7 @@ class Settings:
             os.environ['DISPLAY'] = display.split(".")[0] + tempdisplay
             logging.debug("DISPLAY is", os.environ['DISPLAY'])
         else:
-            os.environ['DISPLAY'] = display
+            os.environ['DISPLAY'] = display.split(".")[0]
 
 class Options():
     def __init__(self):
