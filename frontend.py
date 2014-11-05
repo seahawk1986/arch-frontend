@@ -157,7 +157,7 @@ class Main(dbus.service.Object):
         return self.getFrontend()
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
-    def tempDisplay(self):
+    tempDisplay(self):
         self.settings.update_display(os.environ['DISPLAY'])
         return True
 
@@ -293,7 +293,6 @@ class Main(dbus.service.Object):
         if status == 0:
             logging.debug("status is 0")
             if not path:
-                logging.debug("path not yet defined")
                 logging.debug(self.settings.get_setting('Frontend',
                                                         'bg_detached', None))
                 path = self.settings.get_setting('Frontend', 'bg_detached',
@@ -463,13 +462,21 @@ class Settings:
         self.xbmc = self.get_setting('XBMC', 'xbmc', None)
         # attach always|never|auto
         self.attach = self.get_setting('Frontend', 'attach', 'always')
+        self.get_tempdisplay = self.get_setting('Frontend', 'get_tempdisplay',
+                                                ["dbget", "vdr.tempdisplay"])
         display = self.get_setting('Frontend', 'DISPLAY', ":0")
         self.update_display(display)
 
     def update_display(self, display):
-        tempdisplay = subprocess.check_output(["dbget", "vdr.tempdisplay"])
+        try:
+            tempdisplay = subprocess.check_output(self.get_tempdisplay
+                                                  ).decode()
+        except:
+            tempdisplay = ""
         if len(tempdisplay) > 0:
+            logging.debug("got:", display.split(".")[0], tempdisplay)
             os.environ['DISPLAY'] = display.split(".")[0] + tempdisplay
+            logging.debug("DISPLAY is", os.environ['DISPLAY'])
         else:
             os.environ['DISPLAY'] = display
 
