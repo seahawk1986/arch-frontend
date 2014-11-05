@@ -160,7 +160,7 @@ class Main(dbus.service.Object):
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def tempDisplay(self):
         self.settings.update_display(os.environ['DISPLAY'])
-        retun os.environ['DISPLAY']
+        return os.environ['DISPLAY']
 
     @dbus.service.method('de.yavdr.frontend',
                          in_signature='s',
