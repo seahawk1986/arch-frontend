@@ -467,7 +467,7 @@ class Settings:
         self.update_display(display)
 
     def update_display(self, display):
-        tempdisplay = subprocess.check_output(["dbget", "vdr.tempdisplay")
+        tempdisplay = subprocess.check_output(["dbget", "vdr.tempdisplay"])
         if len(tempdisplay) > 0:
             os.environ['DISPLAY'] = display.split(".")[0] + tempdisplay
         else:
