@@ -9,7 +9,8 @@ import time
 
 
 class VDRsxfe(vdrFrontend):
-    def __init__(self, main, dbus2vdr, path='/usr/bin/vdr-sxfe', origin='127.0.0.1',
+    def __init__(self, main, dbus2vdr, path='/usr/bin/vdr-sxfe',
+                 origin='127.0.0.1',
                  port='37890'):
         super().__init__(main, dbus2vdr)
         self.main = main
@@ -30,6 +31,7 @@ class VDRsxfe(vdrFrontend):
             --syslog xvdr+tcp://{0}:{1}'''.format(origin, port)
         )
         self.proc = None
+        self.block = False
         logging.debug('vdr-sxfe command: %s', self.cmd)
         self.state = 0
 
@@ -42,8 +44,16 @@ class VDRsxfe(vdrFrontend):
                                          env=os.environ)
             GObject.child_watch_add(self.proc.pid, self.on_exit,
                                     self.proc)  # Add callback on exit
-            logging.debug('started vdr-sxfe')
-            return True
+            if self.proc:
+                self.block = True
+                logging.debug('started vdr-sxfe')
+            if self.proc.poll() is not None:
+                logging.warning("failed to start vdr-sxfe")
+                return False
+            else:
+                logging.debug('vdr-sxfe is still running')
+                self.state = 1
+                return True
         elif self.mode == 'local' and self.status() == 0:
             self.main.dbus2vdr.Plugins.SVDRPCommand('xinelibputput', 'LFRO',
                                                     'sxfe')
@@ -55,6 +65,7 @@ class VDRsxfe(vdrFrontend):
             logging.info('stopping vdr-sxfe')
             try:
                 self.proc.kill()
+                self.proc.wait()
                 return True
             except:
                 logging.info('vdr-sxfe already terminated')
