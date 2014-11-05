@@ -21,7 +21,6 @@ class VDRsxfe(vdrFrontend):
                                                    'remote')
         self.main.settings.get_settingb('Xineliboutput', 'autocrop', False)
         os.environ['__GL_SYNC_TO_VBLANK'] = "1"
-        # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
         self.cmd = self.main.settings.get_setting(
             "Xineliboutput",
@@ -31,7 +30,6 @@ class VDRsxfe(vdrFrontend):
             --syslog xvdr+tcp://{0}:{1}'''.format(origin, port)
         )
         self.proc = None
-        self.environ = os.environ
         logging.debug('vdr-sxfe command: %s', self.cmd)
         self.state = 0
 
@@ -41,14 +39,16 @@ class VDRsxfe(vdrFrontend):
                 time.sleep(1)
             logging.info('starting vdr-sxfe')
             self.proc = subprocess.Popen("exec " + self.cmd, shell=True,
-                                         env=self.environ)
+                                         env=os.environ)
             GObject.child_watch_add(self.proc.pid, self.on_exit,
                                     self.proc)  # Add callback on exit
             logging.debug('started vdr-sxfe')
+            return True
         elif self.mode == 'local' and self.status() == 0:
             self.main.dbus2vdr.Plugins.SVDRPCommand('xinelibputput', 'LFRO',
                                                     'sxfe')
             self.state = 1
+            return True
 
     def detach(self, active=0):
         if self.mode == 'remote':
@@ -58,12 +58,14 @@ class VDRsxfe(vdrFrontend):
                 return True
             except:
                 logging.info('vdr-sxfe already terminated')
-            self.proc = None
+            finally:
+                self.proc = None
             #self.main.dbus2vdr.Remote.Disable()
         elif self.mode == 'local':
             self.main.dbus2vdr.Plugins.SVDRPCommand('xinelibputput', 'LFRO',
                                                     'none')
             self.state = 0
+            return True
 
     def status(self):
         if self.mode == 'remote':

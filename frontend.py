@@ -156,6 +156,25 @@ class Main(dbus.service.Object):
             self.attach()
         return self.getFrontend()
 
+    @dbus.service.method('de.yavdr.frontend', out_signature='b')
+    def tempDisplay(self):
+        self.settings.update_display(os.environ['DISPLAY'])
+        return True
+
+    @dbus.service.method('de.yavdr.frontend',
+                         in_signature='s',
+                         out_signature='b')
+    def setDisplay(self, display=None):
+        if display:
+            os.env['DISPLAY'] = display
+            return True
+        else:
+            return False
+
+    @dbus.service.method('de.yavdr.frontend', out_signature='s')
+    def getDisplay(self):
+        return os.env['DISPLAY']
+
     def completeFrontendSwitch(self):
         self.attach()
         if self.current == 'vdr':
@@ -444,8 +463,15 @@ class Settings:
         self.xbmc = self.get_setting('XBMC', 'xbmc', None)
         # attach always|never|auto
         self.attach = self.get_setting('Frontend', 'attach', 'always')
-        os.environ['DISPLAY'] = self.get_setting('Frontend', 'DISPLAY', ":0")
+        display = self.get_setting('Frontend', 'DISPLAY', ":0")
+        self.update_display(display)
 
+    def update_display(self, display):
+        tempdisplay = subprocess.check_output(["dbget", "vdr.tempdisplay")
+        if len(tempdisplay) > 0:
+            os.environ['DISPLAY'] = display.split(".")[0] + tempdisplay
+        else:
+            os.environ['DISPLAY'] = display
 
 class Options():
     def __init__(self):

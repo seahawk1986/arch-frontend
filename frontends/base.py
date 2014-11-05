@@ -4,12 +4,8 @@
 class vdrFrontend:
     def __init__(self, main, name):
         self.main = main
-        self.get_settings()
         self.name = name
         self.state = 0  # 0=detached, 1=active, 2=suspended
-
-    def get_settings(self):
-        self.test = self.main.settings.get_setting('Category', 'setting', None)
 
     def attach(self, options=None):
         self.state = 1

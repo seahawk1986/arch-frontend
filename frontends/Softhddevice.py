@@ -11,11 +11,11 @@ class Softhddevice(vdrFrontend):
     def __init__(self, main, dbus2vdr, name="softhddevice"):
         super().__init__(main, dbus2vdr)
 
-    def get_settings(self):
-        self.options = self.main.settings.get_setting('Softhddevice',
-                                                      'options', '').format(
-                                                          DISPLAY=os.environ[
-                                                              'DISPLAY'])
+    def get_options(self):
+        options = self.main.settings.get_setting('Softhddevice',
+                                                      'options',
+                                                      '-d {DISPLAY}')
+        return options.format(DISPLAY=os.environ['DISPLAY'])
 
     def attach(self, options=None):
         try:
@@ -26,8 +26,7 @@ class Softhddevice(vdrFrontend):
                 else:
                     user_active = False
             if not options:
-                self.get_settings()
-                options = self.options
+                options = self.get_options()
             code, result = self.main.dbus2vdr.Plugins.SVDRPCommand(
                 "softhddevice", "atta", options)
             if code == 900 and self.status() == 1:
@@ -62,6 +61,7 @@ class Softhddevice(vdrFrontend):
             return False
         except Exception as error:
             logging.exception(error)
+            return False
 
     def resume(self):
         state = self.status()
