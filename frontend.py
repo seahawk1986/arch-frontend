@@ -27,6 +27,7 @@ from optparse import OptionParser
 import os
 import time
 import signal
+import shlex
 import subprocess
 import sys
 from dbus2vdr import DBus2VDR
@@ -462,8 +463,9 @@ class Settings:
         self.xbmc = self.get_setting('XBMC', 'xbmc', None)
         # attach always|never|auto
         self.attach = self.get_setting('Frontend', 'attach', 'always')
-        self.get_tempdisplay = self.get_setting('Frontend', 'get_tempdisplay',
-                                                ["dbget", "vdr.tempdisplay"])
+        get_tempdisplay = self.get_setting('Frontend', 'get_tempdisplay',
+                                           'dbget vdr.tempdisplay')
+        self.get_tempdisplay = shlex.split(get_tempdisplay)
         display = self.get_setting('Frontend', 'DISPLAY', ":0")
         self.update_display(display)
 

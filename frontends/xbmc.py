@@ -5,6 +5,7 @@
 from gi.repository import GObject
 import logging
 import os
+import shlex
 import subprocess
 import time
 
@@ -16,11 +17,11 @@ class XBMC():
         os.environ['__GL_SYNC_TO_VBLANK'] = "1"
         # TODO Display config:
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
-        #self.cmd = self.main.settings.get_setting('XBMC', 'xbmc')
-        self.cmd = self.main.settings.get_setting(
+        cmd = self.main.settings.get_setting(
             'XBMC', 'xbmc',
             '/usr/lib/xbmc/xbmc.bin --standalone --lircdev /var/run/lirc/lircd'
         )
+        self.cmd = shlex.split(cmd)
         self.proc = None
         self.block = False
         logging.debug('xbmc command: %s', self.cmd)
@@ -40,8 +41,7 @@ class XBMC():
         except:
             logging.warning("could not set shutdown-inhobitor")
         try:
-            self.proc = subprocess.Popen("exec " + self.cmd, shell=True,
-                                         env=os.environ)
+            self.proc = subprocess.Popen(self.cmd, env=os.environ)
             if self.proc:
                 self.block = True
             if self.proc.poll() is not None:
