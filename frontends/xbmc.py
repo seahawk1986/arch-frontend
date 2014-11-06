@@ -21,6 +21,10 @@ class XBMC():
             'XBMC', 'xbmc',
             '/usr/lib/xbmc/xbmc.bin --standalone --lircdev /var/run/lirc/lircd'
         )
+        self.shutdown_inhibitor = self.main.settings.get_setting(
+            'XBMC', 'shutdown_inhibitor', False)
+        ae_sink = self.main.settings.get_settingb('XBMC', 'AE_SINK', "ALSA")
+        os.environ['AE_SINK'] = ae_sink
         self.cmd = shlex.split(cmd)
         self.proc = None
         self.block = False
@@ -30,16 +34,17 @@ class XBMC():
         logging.info('starting xbmc')
         if self.status() == 1:
             return
-        try:
-            # Shutdown inhibitor
-            self.inhibitor = self.main.inhibit(
-                what="shutdown:sleep:idle",
-                who="frontend",
-                why="xbmc running",
-                mode="block"
-            )
-        except:
-            logging.warning("could not set shutdown-inhobitor")
+        if self.shutdown_inhibitor:
+            try:
+                # Shutdown inhibitor
+                self.inhibitor = self.main.inhibit(
+                    what="shutdown:sleep:idle",
+                    who="frontend",
+                    why="xbmc running",
+                    mode="block"
+                )
+            except:
+                logging.warning("could not set shutdown-inhobitor")
         try:
             self.proc = subprocess.Popen(self.cmd, env=os.environ)
             if self.proc:
