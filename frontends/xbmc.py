@@ -23,7 +23,7 @@ class XBMC():
         )
         self.shutdown_inhibitor = self.main.settings.get_setting(
             'XBMC', 'shutdown_inhibitor', False)
-        ae_sink = self.main.settings.get_settingb('XBMC', 'AE_SINK', "ALSA")
+        ae_sink = self.main.settings.get_setting('XBMC', 'AE_SINK', "ALSA")
         os.environ['AE_SINK'] = ae_sink
         self.cmd = shlex.split(cmd)
         self.proc = None
