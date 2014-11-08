@@ -32,6 +32,7 @@ class XBMC():
 
     def attach(self, options=None):
         logging.info('starting xbmc')
+        self.main.expect_stop = False
         if self.status() == 1:
             return
         if self.shutdown_inhibitor:
@@ -74,7 +75,7 @@ class XBMC():
         snd_free = False
         while not snd_free:
             logging.debug("check if xbmc has freed sound device")
-            fuser_pid = subprocess.Popen(['/usr/sbin/fuser', '-v',
+            fuser_pid = subprocess.Popen(['fuser', '-v',
                                           '/dev/snd/*p'],
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE, shell=True)
@@ -92,7 +93,7 @@ class XBMC():
                 logging.info("normal xbmc exit")
                 if self.main.current == 'xbmc':
                     logging.debug("normal XBMC exit")
-                    if not self.main.external:
+                    if not self.main.external and not self.main.expect_stop:
                         self.main.switchFrontend()
                         self.main.completeFrontendSwitch()
                 else:
@@ -136,6 +137,7 @@ class XBMC():
         try:
             self.proc.terminate()
             logging.debug('sending terminate signal')
+            self.proc.wait()
         except:
             logging.info('xbmc already terminated')
         self.killtimer = GObject.timeout_add(2000, self.kill_xbmc)
