@@ -455,6 +455,9 @@ class Settings:
     def get_settingi(self, category, setting, default):
         return self.parser[category].getint(setting, default)
 
+    def get_settingf(self, category, setting, default):
+        return self.parser[category].getfloat(setting, default)
+
     def init_parser(self, config=None):
         self.parser = configparser.SafeConfigParser(delimiters=(":", "="),
                                                     interpolation=None

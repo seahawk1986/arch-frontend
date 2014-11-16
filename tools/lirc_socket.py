@@ -18,7 +18,7 @@ class lircConnection():
         self.socket_path = self.main.settings.get_setting('Frontend',
                                                           'lirc_socket',
                                                           None)
-        self.delta_t = self.main.settings.get_settingi('Frontend',
+        self.delta_t = self.main.settings.get_settingf('Frontend',
                                                        'lirc_repeat', 0.300)
         logging.debug("lirc_socket is {0}".format(self.socket_path))
         if self.socket_path is None:
