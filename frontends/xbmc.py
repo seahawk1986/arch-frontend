@@ -133,7 +133,7 @@ class XBMC():
                 else:
                     logging.debug("complete switch to other frontend")
                     self.main.completeFrontendSwitch()
-               self.main.switchFrontend()
+                self.main.switchFrontend()
         try:
             os.close(self.inhibitor.take())
         except:
