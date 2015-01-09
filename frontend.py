@@ -274,8 +274,14 @@ class Main(dbus.service.Object):
                                      ) in ['auto', 'always']:
             self.detach()
             logging.debug("add timer for send_shutdown")
-            self.timer = GObject.timeout_add(300000, self.send_shutdown)
+        self.timer = GObject.timeout_add(300000, self.send_shutdown)
         return False
+
+    @dbus.service.method('de.yavdr.frontend', out_signature='b')
+    def init_shutdown(self):
+        if self.current == 'xmbc':
+            self.detach()
+        self.send_shutdown()
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def send_shutdown(self, user=False):

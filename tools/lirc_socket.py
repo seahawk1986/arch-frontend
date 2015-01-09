@@ -130,7 +130,10 @@ class lircConnection():
                 elif cmd == self.main.settings.get_setting("Frontend",
                                                            'lirc_power', None):
                     if self.main.status() == 1:
-                        self.main.timer = GObject.timeout_add(
+                        if self.main.current == 'xbmc':
+                            self.main.init_shutdown()
+                        else:
+                            self.main.timer = GObject.timeout_add(
                             15000, self.main.soft_detach)
                     else:
                         self.main.send_shutdown()
