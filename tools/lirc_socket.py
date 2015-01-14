@@ -137,7 +137,8 @@ class lircConnection():
                                 15000, self.main.soft_detach)
                     else:
                         self.main.send_shutdown()
-                elif self.main.status != 1:
+                elif self.main.status() != 1:
+                    logging.debug("main status is: %s" % main.status)
                     self.main.resume()
             elif self.main.current == 'xbmc':
                 logging.debug("keypress for xbmc")
