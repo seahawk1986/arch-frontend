@@ -150,7 +150,7 @@ class lircConnection():
             logging.debug("main status is: %s" % self.main.status)
             self.main.resume()
         else:
-            logging.debug("lic_socket.py: what to do now?")
+            logging.debug("lic_socket.py: no action necessary")
 
     def xbmc_key_action(self, code, count, cmd, device):
         logging.debug("keypress for xbmc")
