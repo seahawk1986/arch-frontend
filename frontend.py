@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
 # Alexander Grothe, June 2013
 '''
     This program is free software: you can redistribute it and/or modify
@@ -133,10 +134,12 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', out_signature='i')
     def checkFrontend(self):
+        """return status of current frontend"""
         return self.status()
 
     @dbus.service.method('de.yavdr.frontend', out_signature='b')
     def toggleFrontend(self):
+        """toggle between active and inactive frontend"""
         if self.status() == 1:
             self.detach()
         else:
@@ -145,6 +148,7 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def switchFrontend(self):
+        """switch from vdr frontend to kodi and vice versa"""
         if self.status() == 2:
             self.resume()
         if self.current == 'vdr':
@@ -160,6 +164,7 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def tempDisplay(self):
+        """show currently used display"""
         self.setBackground(self.settings.get_setting('Frontend', 'bg_attached',
                                                      None))
         self.settings.update_display(os.environ['DISPLAY'])
@@ -169,6 +174,7 @@ class Main(dbus.service.Object):
                          in_signature='s',
                          out_signature='b')
     def setDisplay(self, display=None):
+        """set DISPLAY varible for internal use"""
         if display:
             os.env['DISPLAY'] = display
             return True
@@ -193,9 +199,10 @@ class Main(dbus.service.Object):
 
     @dbus.service.method('de.yavdr.frontend', out_signature='s')
     def getFrontend(self):
-            m = "current frontend is {0}".format(self.frontends[self.current
-                                                                ].name)
-            return m
+        """return current frontend"""
+        m = "current frontend is {0}".format(
+            self.frontends[self.current].name)
+        return m
 
     @dbus.service.method('de.yavdr.frontend', in_signature='s',
                          out_signature='b')
@@ -225,7 +232,6 @@ class Main(dbus.service.Object):
         if not self.external:
             status = self.frontends[self.current].resume()
             self.dbus2vdr.Remote.Enable()
-            # TODO: change background
             self.setBackground()
             return status
 
@@ -309,15 +315,10 @@ class Main(dbus.service.Object):
             os.environ['DISPLAY'] = display
         logging.debug("setBackground: status is %s, type is %s" %
                       (status, type(status)))
-        if status == 0:
-            logging.debug("status is 0")
-            if not path:
-                logging.debug(self.settings.get_setting('Frontend',
-                                                        'bg_detached', None))
+        if status == 0 and not path:
                 path = self.settings.get_setting('Frontend', 'bg_detached',
                                                  None)
-        elif status == 1:
-            if not path:
+        elif status == 1 and not path:
                 path = self.settings.get_setting('Frontend', 'bg_attached',
                                                  None)
         logging.debug("Background path is %s" % path)
@@ -326,9 +327,6 @@ class Main(dbus.service.Object):
             logging.debug("command for setting bg is: %s" % (
                 " ".join(command)))
             subprocess.call(command, env=os.environ)
-            pass
-        else:
-            pass
         if old_display:
             os.environ['DISPLAY'] = old_display
         return True
@@ -362,16 +360,16 @@ class Main(dbus.service.Object):
 
     def get_vdrFrontend(self):
         if self.dbus2vdr.Plugins.check_plugin('softhddevice'):
-            return Softhddevice(self, 'softhddevice')
+            frontend = Softhddevice(self, 'softhddevice')
         elif self.dbus2vdr.Plugins.check_plugin('xineliboutput'):
-            return VDRsxfe(self, 'vdr-sxfe')
+            frontend = VDRsxfe(self, 'vdr-sxfe')
         elif self.dbus2vdr.Plugins.check_plugin('xine'):
-            return Xine(self, 'xine')
-
+            frontend = Xine(self, 'xine')
         else:
             logging.warning("no vdr frontend found")
-            return None
-        logging.debug("primary frontend is {0}".format(self.frontend.name))
+            frontend = None
+        logging.debug("primary frontend is {0}".format(frontend.name))
+        return frontend
 
     def get_xbmcFrontend(self):
         if self.settings.xbmc and not self.current == 'xbmc':
@@ -530,7 +528,5 @@ if __name__ == '__main__':
     options = Options()
     global main
     main = Main(options.get_options())
-    #signal.signal(signal.SIGTERM, sigint)
-    #signal.signal(signal.SIGINT, sigint)
     main.loop = GObject.MainLoop()
     main.loop.run()
