@@ -117,8 +117,8 @@ class lircConnection():
         logging.debug("current frontend: %s", self.main.current)
         if self.main.current == 'vdr':
             self.vdr_key_action(code, count, cmd, device)
-        elif self.main.current == 'xbmc':
-            self.xbmc_key_action(code, count, cmd, device)
+        elif self.main.current == 'kodi':
+            self.kodi_key_action(code, count, cmd, device)
         else:
             logging.debug("keypress for other frontend")
             logging.debug("current frontend is: %s" % self.main.current)
@@ -149,11 +149,11 @@ class lircConnection():
         else:
             logging.debug("lic_socket.py: no action necessary")
 
-    def xbmc_key_action(self, code, count, cmd, device):
-        logging.debug("keypress for xbmc")
+    def kodi_key_action(self, code, count, cmd, device):
+        logging.debug("keypress for kodi")
         if cmd == self.main.settings.get_setting("Frontend",
                                                  'lirc_switch', None):
-            logging.info('lirc_socket.py: switch from XBMC to VDR')
+            logging.info('lirc_socket.py: switch from KODI to VDR')
             self.main.switchFrontend()
         elif cmd == self.main.settings.get_setting("Frontend",
                                                    'lirc_power', None):
