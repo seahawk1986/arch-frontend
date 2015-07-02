@@ -147,12 +147,13 @@ class KODI():
     def detach(self, active=0):
         logging.info('stopping kodi')
         try:
+            self.killtimer = GObject.timeout_add(2500, self.kill_kodi)
             self.proc.terminate()
-            logging.debug('sending terminate signal')
+            logging.debug('sending SIGTERM')
             self.proc.wait()
+            GObject.source_remove(self.killtimer)
         except:
             logging.info('kodi already terminated')
-        self.killtimer = GObject.timeout_add(2000, self.kill_kodi)
 
     def status(self):
         try:
