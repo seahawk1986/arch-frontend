@@ -3,9 +3,11 @@
 #from dbus.mainloop.glib import DBusGMainLoop
 #dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 from gi.repository import GObject
+import json
 import logging
 import os
 import shlex
+import socket
 import subprocess
 import time
 
@@ -29,6 +31,36 @@ class KODI():
         self.proc = None
         self.block = False
         logging.debug('kodi command: %s', self.cmd)
+
+    def send_tcp_command(self, cmd):
+        host = 'localhost'
+        port = 9090
+        buffer_size = 1024
+        message = json.dumps(cmd).encode()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((host, port))
+            s.send(message)
+            data = s.recv(buffer_size)
+            return data
+
+    def quit_kodi(self):
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "Application.Quit",
+            "params": [],
+            "description": "Quit application",
+            "returns": {
+                "type": "string"
+            }
+        }
+        try:
+            response = json.loads(self.send_tcp_command(payload)).decode()
+        except Exception as e:
+            logging.exception(e)
+            logging.error('could not connect to KODI')
+            return False
+        if response['params']['data']['exitcode'] == 0:
+            return True
 
     def attach(self, options=None):
         logging.info('starting kodi')
@@ -147,11 +179,11 @@ class KODI():
     def detach(self, active=0):
         logging.info('stopping kodi')
         try:
-            self.killtimer = GObject.timeout_add(2500, self.kill_kodi)
-            self.proc.terminate()
-            logging.debug('sending SIGTERM')
-            self.proc.wait()
-            GObject.source_remove(self.killtimer)
+            self.killtimer = GObject.timeout_add(10000, self.kill_kodi)
+            #self.proc.terminate()
+            if self.quit_kodi():
+                self.proc.wait()
+                GObject.source_remove(self.killtimer)
         except:
             logging.info('kodi already terminated')
 
