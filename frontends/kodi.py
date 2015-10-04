@@ -54,7 +54,7 @@ class KODI():
             }
         }
         try:
-            response = json.loads(self.send_tcp_command(payload)).decode()
+            response = json.loads(self.send_tcp_command(payload).decode())
         except Exception as e:
             logging.exception(e)
             logging.error('could not connect to KODI')
