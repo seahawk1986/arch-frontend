@@ -529,4 +529,8 @@ if __name__ == '__main__':
     global main
     main = Main(options.get_options())
     main.loop = GObject.MainLoop()
-    main.loop.run()
+    try:
+        main.loop.run()
+    except KeyboardInterrupt:
+        main.sigint("KeyboardInterrupt")
+        sys.exit("Good Bye")
