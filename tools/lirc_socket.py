@@ -83,13 +83,15 @@ class lircConnection():
         except:
             logging.debug("handler: call reset_lirc")
             self.reset_lirc()
-        lines = buf.decode().split("\n")
-        for line in lines:
-            if len(line) > 0:
-                try:
-                    self.get_key(line)
-                except:
-                    logging.exception("could not parse: %s" % line)
+            return True
+        if buf:
+            lines = buf.decode().split("\n")
+            for line in lines:
+                if len(line) > 0:
+                    try:
+                        self.get_key(line)
+                    except:
+                        logging.exception("could not parse: %s" % line)
         return True
 
     def get_key(self, line):
