@@ -16,7 +16,8 @@ import subprocess
 import sys
 from dbus2vdr import DBus2VDR
 from frontends.base import vdrFrontend
-from frontends.Softhddevice import Softhddevice
+from frontends.softhddevice import Softhddevice
+from frontends.rpihddevice import Rpihddevice
 from frontends.kodi import KODI
 from frontends.xineliboutput import VDRsxfe
 from tools.lirc_socket import lircConnection

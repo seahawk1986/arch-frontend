@@ -33,7 +33,8 @@ import subprocess
 import sys
 from dbus2vdr import DBus2VDR
 from frontends.base import vdrFrontend
-from frontends.Softhddevice import Softhddevice
+from frontends.softhddevice import Softhddevice
+from frontends.rpihddevice import Rpihddevice
 from frontends.kodi import KODI
 from frontends.xineliboutput import VDRsxfe
 from frontends.xine import Xine
@@ -308,6 +309,8 @@ class Main(dbus.service.Object):
     @dbus.service.method('de.yavdr.frontend', in_signature='ss',
                          out_signature='b')
     def setBackground(self, path=None, display=None):
+        if not self.settings.set_bg:
+            return True
         status = self.status()
         old_display = None
         if display:
@@ -361,6 +364,8 @@ class Main(dbus.service.Object):
     def get_vdrFrontend(self):
         if self.dbus2vdr.Plugins.check_plugin('softhddevice'):
             frontend = Softhddevice(self, 'softhddevice')
+        elif self.dbus2vdr.Plugins.check_plugin('rpihddevice'):
+            frontend = Rpihddevice(self, 'rpihddevice')
         elif self.dbus2vdr.Plugins.check_plugin('xineliboutput'):
             frontend = VDRsxfe(self, 'vdr-sxfe')
         elif self.dbus2vdr.Plugins.check_plugin('xine'):
@@ -473,6 +478,7 @@ class Settings:
         self.logfile = self.get_setting('Logging', 'logfile',
                                         "/tmp/frontend.log")
         self.loglevel = self.get_setting('Logging', 'loglevel', "DEBUG")
+        self.set_bg = self.get_settingb('Frontend', 'set_bg', "False")
         line_format = '%(asctime)-15s %(levelname)-6s %(message)s'
         if self.log2file:
             logging.basicConfig(filename=self.logfile,
