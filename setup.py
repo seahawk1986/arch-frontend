@@ -3,5 +3,6 @@ setup(name='arch-frontend',
       version='0.0.1',
       py_modules=['frontend', 'frontends.base', 'frontends.softhddevice',
                   'frontends.kodi', 'frontends.xineliboutput', 'frontends.xine',
+                  'frontends.rpihddevice',
                   'tools.lirc_socket']
       )
