@@ -373,7 +373,8 @@ class Main(dbus.service.Object):
         else:
             logging.warning("no vdr frontend found")
             frontend = None
-        logging.debug("primary frontend is {0}".format(frontend.name))
+        if frontend:
+            logging.debug("primary frontend is {0}".format(frontend.name))
         return frontend
 
     def get_kodiFrontend(self):
