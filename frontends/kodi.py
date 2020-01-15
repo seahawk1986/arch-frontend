@@ -21,7 +21,7 @@ class KODI():
         os.environ['__GL_SYNC_DISPLAY_DEVICE'] = os.environ['DISPLAY']
         cmd = self.main.settings.get_setting(
             'KODI', 'kodi',
-            '/usr/lib/kodi/kodi.bin --standalone --lircdev /var/run/lirc/lircd'
+            '/usr/lib/kodi/kodi-x11 --standalone --lircdev /var/run/lirc/lircd'
         )
         self.shutdown_inhibitor = self.main.settings.get_setting(
             'KODI', 'shutdown_inhibitor', False)
