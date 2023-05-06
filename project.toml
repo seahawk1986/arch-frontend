@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arch-frontend"
+version = "0.0.1"
+authors = [{name="seahawk1986", email="seahawk1986@gmx.de" }]
+description = "early frontend management experiment"
+readme = "README.md"
+dependencies = []
+requires-python = ">=3.9"
+
+[project.scripts]
+my-client = "my_package.my_module:main_cli"
+
+[project.urls]
+"Homepage" = "https://github.com/seahawk1986/arch-frontend"
+"Bug Tracker" = "https://github.com/seahawk1986/arch-frontend/issues"
