@@ -463,7 +463,7 @@ class Settings:
         return self.parser[category].getfloat(setting, default)
 
     def init_parser(self, config=None):
-        self.parser = configparser.SafeConfigParser(delimiters=(":", "="),
+        self.parser = configparser.ConfigParser(delimiters=(":", "="),
                                                     interpolation=None
                                                     )
         self.parser.optionxform = str
