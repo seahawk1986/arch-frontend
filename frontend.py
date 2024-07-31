@@ -468,7 +468,7 @@ class Settings:
                                                     )
         self.parser.optionxform = str
         with open(self.config, 'r', encoding='utf-8') as f:
-            self.parser.readfp(f)
+            self.parser.read_file(f)
         self.log2file = self.get_settingb('Logging', 'use_file', False)
         self.logfile = self.get_setting('Logging', 'logfile',
                                         "/tmp/frontend.log")
